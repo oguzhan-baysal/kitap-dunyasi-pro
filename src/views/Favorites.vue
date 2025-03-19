@@ -103,6 +103,8 @@ onMounted(() => {
 </template>
 
 <style lang="scss" scoped>
+@import '@/assets/styles/_variables.scss';
+
 .favorites-page {
   min-height: 100vh;
   padding: $spacing-4;

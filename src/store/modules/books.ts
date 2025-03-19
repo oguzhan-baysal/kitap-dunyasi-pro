@@ -8,9 +8,9 @@ const state = (): BooksState => ({
   error: null,
   selectedBook: null,
   filters: {
-    category: null,
-    priceRange: { min: 0, max: 1000 },
-    rating: null,
+    category: '',
+    minPrice: 0,
+    maxPrice: 1000,
     searchQuery: ''
   },
   sort: {
@@ -39,8 +39,8 @@ const getters = {
       }
 
       // Fiyat aralığı filtresi
-      if (book.price < state.filters.priceRange.min || 
-          book.price > state.filters.priceRange.max) {
+      if (book.price < state.filters.minPrice || 
+          book.price > state.filters.maxPrice) {
         return false
       }
 
@@ -111,7 +111,7 @@ const actions = {
           price: 49.90,
           rating: 4.8,
           category: 'Roman',
-          coverImage: '/placeholder.svg'
+          imageUrl: '/placeholder.svg'
         },
         {
           id: 2,
@@ -121,7 +121,7 @@ const actions = {
           price: 39.90,
           rating: 4.7,
           category: 'Roman',
-          coverImage: '/placeholder.svg'
+          imageUrl: '/placeholder.svg'
         },
         {
           id: 3,
@@ -131,7 +131,7 @@ const actions = {
           price: 29.90,
           rating: 4.6,
           category: 'Roman',
-          coverImage: '/placeholder.svg'
+          imageUrl: '/placeholder.svg'
         },
         {
           id: 4,
@@ -141,7 +141,7 @@ const actions = {
           price: 69.90,
           rating: 4.9,
           category: 'Roman',
-          coverImage: '/placeholder.svg'
+          imageUrl: '/placeholder.svg'
         },
         {
           id: 5,
@@ -151,7 +151,7 @@ const actions = {
           price: 24.90,
           rating: 4.8,
           category: 'Çocuk',
-          coverImage: '/placeholder.svg'
+          imageUrl: '/placeholder.svg'
         },
         {
           id: 6,
@@ -161,7 +161,7 @@ const actions = {
           price: 59.90,
           rating: 4.7,
           category: 'Bilim',
-          coverImage: '/placeholder.svg'
+          imageUrl: '/placeholder.svg'
         },
         {
           id: 7,
@@ -171,7 +171,7 @@ const actions = {
           price: 44.90,
           rating: 4.6,
           category: 'Kişisel Gelişim',
-          coverImage: '/placeholder.svg'
+          imageUrl: '/placeholder.svg'
         },
         {
           id: 8,
@@ -181,7 +181,7 @@ const actions = {
           price: 34.90,
           rating: 5.0,
           category: 'Tarih',
-          coverImage: '/placeholder.svg'
+          imageUrl: '/placeholder.svg'
         }
       ]
 
@@ -209,7 +209,7 @@ const actions = {
           price: 49.90,
           rating: 4.8,
           category: 'Roman',
-          coverImage: '/placeholder.svg'
+          imageUrl: '/placeholder.svg'
         },
         {
           id: 2,
@@ -219,7 +219,7 @@ const actions = {
           price: 39.90,
           rating: 4.7,
           category: 'Roman',
-          coverImage: '/placeholder.svg'
+          imageUrl: '/placeholder.svg'
         },
         {
           id: 3,
@@ -229,7 +229,7 @@ const actions = {
           price: 29.90,
           rating: 4.6,
           category: 'Roman',
-          coverImage: '/placeholder.svg'
+          imageUrl: '/placeholder.svg'
         },
         {
           id: 4,
@@ -239,7 +239,7 @@ const actions = {
           price: 69.90,
           rating: 4.9,
           category: 'Roman',
-          coverImage: '/placeholder.svg'
+          imageUrl: '/placeholder.svg'
         },
         {
           id: 5,
@@ -249,7 +249,7 @@ const actions = {
           price: 24.90,
           rating: 4.8,
           category: 'Çocuk',
-          coverImage: '/placeholder.svg'
+          imageUrl: '/placeholder.svg'
         },
         {
           id: 6,
@@ -259,7 +259,7 @@ const actions = {
           price: 59.90,
           rating: 4.7,
           category: 'Bilim',
-          coverImage: '/placeholder.svg'
+          imageUrl: '/placeholder.svg'
         },
         {
           id: 7,
@@ -269,7 +269,7 @@ const actions = {
           price: 44.90,
           rating: 4.6,
           category: 'Kişisel Gelişim',
-          coverImage: '/placeholder.svg'
+          imageUrl: '/placeholder.svg'
         },
         {
           id: 8,
@@ -279,7 +279,7 @@ const actions = {
           price: 34.90,
           rating: 5.0,
           category: 'Tarih',
-          coverImage: '/placeholder.svg'
+          imageUrl: '/placeholder.svg'
         }
       ]
 

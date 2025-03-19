@@ -1,13 +1,17 @@
 import { createRouter, createWebHistory } from 'vue-router';
-import store from '@/store';
+import HomeView from '@/views/HomeView.vue';
+import LoginView from '@/views/auth/LoginView.vue';
+import RegisterView from '@/views/auth/RegisterView.vue';
+import ForgotPasswordView from '@/views/auth/ForgotPasswordView.vue';
+import { useStore } from 'vuex';
 
 const router = createRouter({
-  history: createWebHistory(),
+  history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     {
       path: '/',
       name: 'home',
-      component: () => import('@/views/HomeView.vue'),
+      component: HomeView,
       meta: {
         title: 'Ana Sayfa',
       },
@@ -49,19 +53,20 @@ const router = createRouter({
     {
       path: '/login',
       name: 'login',
-      component: () => import('@/views/LoginView.vue'),
-      meta: { guest: true },
+      component: LoginView,
+      meta: { requiresGuest: true },
     },
     {
       path: '/register',
       name: 'register',
-      component: () => import('@/views/RegisterView.vue'),
-      meta: { guest: true },
+      component: RegisterView,
+      meta: { requiresGuest: true },
     },
     {
       path: '/forgot-password',
       name: 'forgot-password',
-      component: () => import('@/views/ForgotPasswordView.vue'),
+      component: ForgotPasswordView,
+      meta: { requiresGuest: true },
     },
     {
       path: '/book/add',
@@ -97,23 +102,25 @@ const router = createRouter({
 
 // Navigation Guards
 router.beforeEach((to, from, next) => {
+  const store = useStore();
+  const isAuthenticated = store.getters['auth/isAuthenticated'];
+
   // Update page title
   document.title = `${to.meta.title} - Kitap Dünyası Pro`;
 
-  if (to.matched.some(record => record.meta.requiresAuth)) {
-    if (!store.getters['auth/isAuthenticated']) {
-      next({
-        path: '/login',
-        query: { redirect: to.fullPath }
-      });
-    } else {
-      next();
-    }
-  } else if (to.meta.guest && store.getters['auth/isAuthenticated']) {
-    next('/');
-  } else {
-    next();
+  // Giriş gerektiren rotalar
+  if (to.meta.requiresAuth && !isAuthenticated) {
+    next('/login');
+    return;
   }
+
+  // Sadece giriş yapmamış kullanıcılar için rotalar
+  if (to.meta.requiresGuest && isAuthenticated) {
+    next('/');
+    return;
+  }
+
+  next();
 });
 
 export default router; 

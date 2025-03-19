@@ -1,21 +1,21 @@
-// @ts-ignore
 import { createStore } from 'vuex'
-import { auth } from './modules/auth'
+import { RootState } from './types'
 import { books } from './modules/books'
+import { auth } from './modules/auth'
 import { currency } from './modules/currency'
 import { favorites } from './modules/favorites'
-import { ui } from './modules/ui'
-import type { RootState } from './types'
 
-export default createStore<RootState>({
-  state: {
-    version: '1.0.0'
-  },
+export const store = createStore<RootState>({
   modules: {
-    auth,
     books,
+    auth,
     currency,
-    favorites,
-    ui
+    favorites
   }
-}) 
+})
+
+export function useStore() {
+  return store
+}
+
+export default store 

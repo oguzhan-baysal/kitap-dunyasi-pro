@@ -2,150 +2,125 @@
 import { ref } from 'vue'
 import { useStore } from 'vuex'
 import { useRouter } from 'vue-router'
-import { useField, useForm } from 'vee-validate'
-import * as yup from 'yup'
 
 const store = useStore()
 const router = useRouter()
 
-const validationSchema = yup.object({
-  name: yup.string().required('İsim zorunludur'),
-  email: yup.string().email('Geçerli bir e-posta adresi girin').required('E-posta zorunludur'),
-  password: yup.string().min(6, 'Şifre en az 6 karakter olmalıdır').required('Şifre zorunludur'),
-  confirmPassword: yup.string()
-    .oneOf([yup.ref('password')], 'Şifreler eşleşmiyor')
-    .required('Şifre tekrarı zorunludur')
-})
-
-const { handleSubmit, errors } = useForm({
-  validationSchema
-})
-
-const { value: name } = useField('name')
-const { value: email } = useField('email')
-const { value: password } = useField('password')
-const { value: confirmPassword } = useField('confirmPassword')
-
-const isLoading = ref(false)
+const name = ref('')
+const email = ref('')
+const password = ref('')
+const confirmPassword = ref('')
+const loading = ref(false)
 const error = ref('')
 
-const onSubmit = handleSubmit(async (values) => {
-  isLoading.value = true
-  error.value = ''
-  
+const handleSubmit = async () => {
   try {
-    await store.dispatch('user/register', {
-      name: values.name,
-      email: values.email,
-      password: values.password
+    if (password.value !== confirmPassword.value) {
+      error.value = 'Şifreler eşleşmiyor'
+      return
+    }
+
+    loading.value = true
+    error.value = ''
+    
+    await store.dispatch('auth/register', {
+      name: name.value,
+      email: email.value,
+      password: password.value
     })
-    router.push('/books')
+    
+    router.push('/')
   } catch (err) {
-    error.value = 'Kayıt olurken bir hata oluştu'
-    console.error(err)
+    error.value = err instanceof Error ? err.message : 'Kayıt olurken bir hata oluştu'
   } finally {
-    isLoading.value = false
+    loading.value = false
   }
-})
+}
 </script>
 
 <template>
-  <form @submit.prevent="onSubmit" class="register-form">
-    <h1>Kayıt Ol</h1>
+  <form @submit.prevent="handleSubmit" class="register-form">
+    <h2>Kayıt Ol</h2>
+    
+    <div class="form-group">
+      <label for="name">Ad Soyad</label>
+      <input 
+        id="name"
+        type="text" 
+        v-model="name"
+        required
+        placeholder="Adınız ve soyadınız"
+      >
+    </div>
+    
+    <div class="form-group">
+      <label for="email">E-posta</label>
+      <input 
+        id="email"
+        type="email" 
+        v-model="email"
+        required
+        placeholder="E-posta adresiniz"
+      >
+    </div>
+    
+    <div class="form-group">
+      <label for="password">Şifre</label>
+      <input 
+        id="password"
+        type="password" 
+        v-model="password"
+        required
+        placeholder="Şifreniz"
+      >
+    </div>
+    
+    <div class="form-group">
+      <label for="confirmPassword">Şifre Tekrar</label>
+      <input 
+        id="confirmPassword"
+        type="password" 
+        v-model="confirmPassword"
+        required
+        placeholder="Şifrenizi tekrar girin"
+      >
+    </div>
+    
+    <div class="form-actions">
+      <button 
+        type="submit" 
+        :disabled="loading"
+        class="submit-button"
+      >
+        {{ loading ? 'Kayıt Yapılıyor...' : 'Kayıt Ol' }}
+      </button>
+    </div>
     
     <div v-if="error" class="error-message">
       {{ error }}
     </div>
     
-    <div class="form-group">
-      <label for="name">İsim</label>
-      <input
-        id="name"
-        v-model="name"
-        type="text"
-        :class="{ error: errors.name }"
-      >
-      <span v-if="errors.name" class="error-text">
-        {{ errors.name }}
-      </span>
-    </div>
-    
-    <div class="form-group">
-      <label for="email">E-posta</label>
-      <input
-        id="email"
-        v-model="email"
-        type="email"
-        :class="{ error: errors.email }"
-      >
-      <span v-if="errors.email" class="error-text">
-        {{ errors.email }}
-      </span>
-    </div>
-    
-    <div class="form-group">
-      <label for="password">Şifre</label>
-      <input
-        id="password"
-        v-model="password"
-        type="password"
-        :class="{ error: errors.password }"
-      >
-      <span v-if="errors.password" class="error-text">
-        {{ errors.password }}
-      </span>
-    </div>
-    
-    <div class="form-group">
-      <label for="confirmPassword">Şifre Tekrarı</label>
-      <input
-        id="confirmPassword"
-        v-model="confirmPassword"
-        type="password"
-        :class="{ error: errors.confirmPassword }"
-      >
-      <span v-if="errors.confirmPassword" class="error-text">
-        {{ errors.confirmPassword }}
-      </span>
-    </div>
-    
-    <button 
-      type="submit"
-      :disabled="isLoading"
-      class="submit-button"
-    >
-      {{ isLoading ? 'Kaydediliyor...' : 'Kayıt Ol' }}
-    </button>
-    
     <div class="login-link">
-      Zaten hesabınız var mı?
-      <router-link to="/auth/login">Giriş Yap</router-link>
+      Zaten hesabınız var mı? 
+      <router-link to="/login">Giriş Yap</router-link>
     </div>
   </form>
 </template>
 
 <style lang="scss" scoped>
 .register-form {
-  background: var(--color-card-bg);
-  padding: 2rem;
-  border-radius: 8px;
-  width: 100%;
   max-width: 400px;
+  margin: 2rem auto;
+  padding: 2rem;
+  background: var(--color-bg-primary);
+  border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   
-  h1 {
-    margin: 0 0 2rem;
+  h2 {
     text-align: center;
-    font-size: 2rem;
+    margin-bottom: 2rem;
+    color: var(--color-text-primary);
   }
-}
-
-.error-message {
-  background: var(--color-error-bg);
-  color: var(--color-error);
-  padding: 1rem;
-  border-radius: 4px;
-  margin-bottom: 1rem;
 }
 
 .form-group {
@@ -154,7 +129,7 @@ const onSubmit = handleSubmit(async (values) => {
   label {
     display: block;
     margin-bottom: 0.5rem;
-    color: var(--color-text);
+    color: var(--color-text-primary);
   }
   
   input {
@@ -162,57 +137,60 @@ const onSubmit = handleSubmit(async (values) => {
     padding: 0.75rem;
     border: 1px solid var(--color-border);
     border-radius: 4px;
-    background: var(--color-input-bg);
-    color: var(--color-text);
-    
-    &.error {
-      border-color: var(--color-error);
-    }
+    font-size: 1rem;
     
     &:focus {
       outline: none;
       border-color: var(--color-primary);
+      box-shadow: 0 0 0 2px rgba(25, 118, 210, 0.1);
     }
   }
 }
 
-.error-text {
-  display: block;
-  margin-top: 0.5rem;
-  color: var(--color-error);
-  font-size: 0.875rem;
+.form-actions {
+  margin-bottom: 1rem;
+  
+  .submit-button {
+    width: 100%;
+    padding: 0.75rem;
+    background: var(--color-primary);
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    
+    &:hover {
+      background: var(--color-primary-dark);
+    }
+    
+    &:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+    }
+  }
 }
 
-.submit-button {
-  width: 100%;
+.error-message {
+  margin-top: 1rem;
   padding: 0.75rem;
-  background: var(--color-primary);
+  background: var(--color-error);
   color: white;
-  border: none;
   border-radius: 4px;
-  font-size: 1rem;
-  cursor: pointer;
-  transition: background 0.2s;
-  
-  &:hover:not(:disabled) {
-    background: var(--color-primary-dark);
-  }
-  
-  &:disabled {
-    opacity: 0.7;
-    cursor: not-allowed;
-  }
+  font-size: 0.9rem;
+  text-align: center;
 }
 
 .login-link {
   margin-top: 1.5rem;
   text-align: center;
-  color: var(--color-text-light);
+  font-size: 0.9rem;
+  color: var(--color-text-secondary);
   
   a {
     color: var(--color-primary);
     text-decoration: none;
-    margin-left: 0.5rem;
     
     &:hover {
       text-decoration: underline;

@@ -1,82 +1,101 @@
 <script setup lang="ts">
 import { onMounted } from 'vue';
-import { useStore } from 'vuex';
-import { RootState } from './store/types';
+import { useStore } from '@/store';
+import { RouterView } from 'vue-router';
+import Navbar from '@/components/layout/Navbar.vue';
 
-const store = useStore<RootState>();
+const store = useStore();
 
 onMounted(async () => {
-  // Initialize store modules
-  await store.dispatch('auth/initializeFromStorage');
-  await store.dispatch('books/fetchBooks');
+  // Auth durumunu kontrol et
+  await store.dispatch('auth/checkAuth');
+  
+  // Kitapları yükle
+  await store.dispatch('books/initialize');
+  
+  // Döviz kurlarını yükle
   await store.dispatch('currency/fetchRates');
-  await store.dispatch('favorites/initialize');
-  await store.dispatch('ui/initialize');
 });
 </script>
 
 <template>
-  <div id="app" :data-theme="store.state.ui.theme">
-    <router-view />
-  </div>
+  <Navbar />
+  <RouterView />
 </template>
 
 <style lang="scss">
 :root {
-  // Renkler
+  // Ana renkler
   --color-primary: #1976d2;
   --color-primary-dark: #1565c0;
-  --color-secondary: #424242;
-  --color-accent: #82b1ff;
-  --color-error: #ff5252;
-  --color-success: #4caf50;
-  --color-warning: #fb8c00;
-  --color-info: #2196f3;
+  --color-primary-light: #42a5f5;
+  --color-secondary: #9c27b0;
+  --color-success: #2e7d32;
+  --color-error: #d32f2f;
+  --color-warning: #ed6c02;
+  --color-info: #0288d1;
 
   // Metin renkleri
-  --color-text-primary: #333333;
-  --color-text-secondary: #666666;
-  --color-text-light: #999999;
+  --color-text: #213547;
+  --color-text-light: #4a5568;
+  --color-heading: #1a202c;
+  --color-link: var(--color-primary);
 
-  // Arka plan renkleri
-  --color-bg-primary: #ffffff;
-  --color-bg-secondary: #f5f5f5;
-  --color-card-bg: #ffffff;
+  // Arkaplan renkleri
+  --color-background: #ffffff;
+  --color-background-soft: #f8fafc;
+  --color-background-mute: #f1f5f9;
 
   // Kenarlık renkleri
-  --color-border: #e0e0e0;
+  --color-border: #e2e8f0;
+  --color-border-hover: #cbd5e1;
+  --color-divider: #e2e8f0;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  position: relative;
+  font-weight: normal;
 }
 
 body {
-  margin: 0;
-  font-family: $font-family-base;
-  font-size: $font-size-base;
-  line-height: $line-height-base;
-  color: var(--color-text-primary);
-  background-color: var(--color-bg-secondary);
+  min-height: 100vh;
+  color: var(--color-text);
+  background: var(--color-background);
+  line-height: 1.6;
+  font-family: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu,
+    Cantarell, 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+  font-size: 16px;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 #app {
   min-height: 100vh;
-  background-color: var(--color-background);
-  color: var(--color-text);
-  transition: background-color var(--transition-normal), color var(--transition-normal);
-}
-
-* {
-  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
 }
 
 a {
-  color: var(--color-primary);
   text-decoration: none;
-  
-  &:hover {
-    text-decoration: underline;
-  }
+  color: var(--color-link);
+  transition: 0.4s;
+  padding: 3px;
 }
 
 button {
+  cursor: pointer;
   font-family: inherit;
+}
+
+@media (hover: hover) {
+  a:hover {
+    background-color: var(--color-background-soft);
+  }
 }
 </style>

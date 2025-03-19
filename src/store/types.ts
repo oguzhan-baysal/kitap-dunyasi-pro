@@ -1,12 +1,16 @@
 export interface RootState {
-  auth: AuthState
+  version: string
   books: BooksState
   currency: CurrencyState
+  favorites: FavoritesState
+  auth: AuthState
 }
 
 export interface AuthState {
   user: User | null
   token: string | null
+  refreshToken: string | null
+  tokenExpiresAt: number | null
   loading: boolean
   error: string | null
 }
@@ -18,7 +22,7 @@ export interface User {
 }
 
 export interface CurrencyState {
-  rates: { [key: string]: number }
+  rates: Record<string, number>
   baseCurrency: string
   selectedCurrency: string
   loading: boolean
@@ -26,7 +30,9 @@ export interface CurrencyState {
 }
 
 export interface FavoritesState {
-  favorites: number[]
+  favorites: Book[]
+  loading: boolean
+  error: string | null
 }
 
 export interface UIState {
@@ -39,24 +45,28 @@ export interface Book {
   author: string
   description: string
   price: number
-  rating: number
   category: string
-  coverImage?: string
+  imageUrl: string
+  rating: number
+}
+
+export interface BookFilters {
+  category: string
+  minPrice: number
+  maxPrice: number
+  searchQuery: string
+}
+
+export interface BookSort {
+  field: string
+  order: 'asc' | 'desc'
 }
 
 export interface BooksState {
   books: Book[]
+  selectedBook: Book | null
   loading: boolean
   error: string | null
-  selectedBook: Book | null
-  filters: {
-    category: string | null
-    priceRange: { min: number; max: number }
-    rating: number | null
-    searchQuery: string
-  }
-  sort: {
-    field: string
-    order: 'asc' | 'desc'
-  }
+  filters: BookFilters
+  sort: BookSort
 } 
