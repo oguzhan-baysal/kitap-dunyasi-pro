@@ -1,19 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useStore } from 'vuex'
-
-interface Book {
-  id: string
-  title: string
-  author: string
-  price: number
-  coverImage: string
-  description: string
-  category: string
-  language: string
-  pageCount: number
-  publishYear: number
-}
+import type { Book } from '@/store/types'
 
 const props = defineProps<{
   book: Book
@@ -21,14 +9,13 @@ const props = defineProps<{
 
 const store = useStore()
 
-const selectedCurrency = computed(() => store.state.currency.selectedCurrency)
-const currencyRate = computed(() => store.getters['currency/getRate'](selectedCurrency.value))
-
 const formattedPrice = computed(() => {
-  const price = props.book.price * currencyRate.value
+  const rate = store.getters['currency/getRate']('TRY')
+  const price = props.book.price * rate
+
   return new Intl.NumberFormat('tr-TR', {
     style: 'currency',
-    currency: selectedCurrency.value
+    currency: 'TRY'
   }).format(price)
 })
 
@@ -46,7 +33,7 @@ const toggleFavorite = () => {
 <template>
   <div class="book-card">
     <div class="book-image">
-      <img :src="book.coverImage" :alt="book.title">
+      <img :src="book.coverImage" :alt="book.title" class="book-cover">
       <button 
         class="favorite-button"
         :class="{ active: isFavorite }"
@@ -57,9 +44,14 @@ const toggleFavorite = () => {
     </div>
     
     <div class="book-info">
-      <h3>{{ book.title }}</h3>
-      <p class="author">{{ book.author }}</p>
-      <p class="price">{{ formattedPrice }}</p>
+      <h3 class="book-title">{{ book.title }}</h3>
+      <p class="book-author">{{ book.author }}</p>
+      <p class="book-description">{{ book.description }}</p>
+      <div class="book-price">{{ formattedPrice }}</div>
+      <div class="book-rating">
+        <span class="stars">★★★★★</span>
+        <span class="rating-value">{{ book.rating }}</span>
+      </div>
       
       <div class="book-actions">
         <router-link 
@@ -123,22 +115,47 @@ const toggleFavorite = () => {
 .book-info {
   padding: 1rem;
   
-  h3 {
+  .book-title {
     margin: 0 0 0.5rem;
     font-size: 1rem;
     line-height: 1.4;
   }
   
-  .author {
+  .book-author {
     color: var(--color-text-light);
     font-size: 0.9rem;
     margin: 0 0 0.5rem;
   }
   
-  .price {
+  .book-description {
+    color: var(--color-text-secondary);
+    font-size: 0.9rem;
+    margin: 0 0 1rem;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  
+  .book-price {
     font-weight: 600;
     color: var(--color-primary);
     margin: 0 0 1rem;
+  }
+
+  .book-rating {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+
+    .stars {
+      color: var(--color-warning);
+    }
+
+    .rating-value {
+      color: var(--color-text-secondary);
+      font-size: 0.9rem;
+    }
   }
 }
 

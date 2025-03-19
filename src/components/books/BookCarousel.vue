@@ -1,24 +1,29 @@
 <script setup lang="ts">
-import { ref, onMounted, onBeforeUnmount } from 'vue'
+import { ref, onMounted, onBeforeUnmount, computed } from 'vue'
 import { useStore } from 'vuex'
 
 const store = useStore()
 const currentSlide = ref(0)
 const autoplayInterval = ref<number | null>(null)
 
-const featuredBooks = computed(() => store.getters['books/featuredBooks'])
+const featuredBooks = computed(() => store.getters['books/featuredBooks'] || [])
+const hasBooks = computed(() => featuredBooks.value.length > 0)
 
 const nextSlide = () => {
+  if (!hasBooks.value) return
   currentSlide.value = (currentSlide.value + 1) % featuredBooks.value.length
 }
 
 const prevSlide = () => {
+  if (!hasBooks.value) return
   currentSlide.value = currentSlide.value === 0 
     ? featuredBooks.value.length - 1 
     : currentSlide.value - 1
 }
 
 const startAutoplay = () => {
+  if (!hasBooks.value) return
+  stopAutoplay()
   autoplayInterval.value = window.setInterval(nextSlide, 5000)
 }
 
@@ -40,6 +45,7 @@ onBeforeUnmount(() => {
 
 <template>
   <div 
+    v-if="hasBooks"
     class="book-carousel"
     @mouseenter="stopAutoplay"
     @mouseleave="startAutoplay"
@@ -54,7 +60,7 @@ onBeforeUnmount(() => {
           :key="book.id"
           class="carousel-slide"
         >
-          <img :src="book.coverImage" :alt="book.title">
+          <img :src="book.coverImage || '/placeholder.jpg'" :alt="book.title">
           <div class="slide-content">
             <h2>{{ book.title }}</h2>
             <p>{{ book.author }}</p>

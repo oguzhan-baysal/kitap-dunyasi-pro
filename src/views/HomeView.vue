@@ -19,25 +19,26 @@ const viewMode = ref<'grid' | 'list'>('grid')
 
 <style lang="scss" scoped>
 .home-view {
-  padding: 2rem;
+  padding: $spacing-large;
 }
 
 .content {
-  margin-top: 2rem;
+  margin-top: $spacing-large;
   display: grid;
-  gap: 2rem;
+  gap: $spacing-large;
   grid-template-columns: 300px 1fr;
 
-  @media (max-width: 768px) {
+  @media (max-width: $breakpoint-md) {
     grid-template-columns: 1fr;
   }
 }
 
 .book-filter {
   background: var(--color-card-bg);
-  padding: 1.5rem;
-  border-radius: 8px;
+  padding: $spacing-medium;
+  border-radius: $border-radius;
   height: fit-content;
+  box-shadow: $box-shadow;
 }
 
 .book-grid {

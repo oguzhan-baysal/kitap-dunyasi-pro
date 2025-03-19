@@ -1,8 +1,7 @@
 export interface RootState {
-  version: string
   auth: AuthState
+  books: BooksState
   currency: CurrencyState
-  favorites: FavoritesState
 }
 
 export interface AuthState {
@@ -13,20 +12,51 @@ export interface AuthState {
 }
 
 export interface User {
-  id: string
+  id: number
   name: string
   email: string
-  avatar?: string
 }
 
 export interface CurrencyState {
-  rates: Record<string, number>
+  rates: { [key: string]: number }
+  baseCurrency: string
   selectedCurrency: string
-  lastUpdate: number | null
-  isLoading: boolean
+  loading: boolean
   error: string | null
 }
 
 export interface FavoritesState {
-  favorites: string[]
+  favorites: number[]
+}
+
+export interface UIState {
+  theme: 'light' | 'dark'
+}
+
+export interface Book {
+  id: number
+  title: string
+  author: string
+  description: string
+  price: number
+  rating: number
+  category: string
+  coverImage?: string
+}
+
+export interface BooksState {
+  books: Book[]
+  loading: boolean
+  error: string | null
+  selectedBook: Book | null
+  filters: {
+    category: string | null
+    priceRange: { min: number; max: number }
+    rating: number | null
+    searchQuery: string
+  }
+  sort: {
+    field: string
+    order: 'asc' | 'desc'
+  }
 } 

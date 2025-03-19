@@ -5,8 +5,9 @@ import BookCard from './BookCard.vue'
 
 const store = useStore()
 
-const books = computed(() => store.getters['books/filteredBooks'])
+const books = computed(() => store.getters['books/getFilteredBooks'] || [])
 const isLoading = computed(() => store.state.books.loading)
+const hasBooks = computed(() => books.value.length > 0)
 
 defineProps<{
   viewMode: 'grid' | 'list'
@@ -26,13 +27,15 @@ defineProps<{
     </div>
     
     <template v-else>
-      <BookCard
-        v-for="book in books"
-        :key="book.id"
-        :book="book"
-      />
+      <div v-if="hasBooks" class="books-container">
+        <BookCard
+          v-for="book in books"
+          :key="book.id"
+          :book="book"
+        />
+      </div>
       
-      <div v-if="!books.length" class="no-results">
+      <div v-else class="no-results">
         Kitap bulunamadı
       </div>
     </template>
@@ -41,21 +44,26 @@ defineProps<{
 
 <style lang="scss" scoped>
 .book-grid {
+  width: 100%;
+}
+
+.books-container {
   display: grid;
   gap: 2rem;
-  
-  &.view-grid {
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  }
-  
-  &.view-list {
-    grid-template-columns: 1fr;
-  }
-  
-  &.loading {
-    place-items: center;
-    min-height: 400px;
-  }
+}
+
+.book-grid.view-grid .books-container {
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+}
+
+.book-grid.view-list .books-container {
+  grid-template-columns: 1fr;
+}
+
+.book-grid.loading {
+  display: grid;
+  place-items: center;
+  min-height: 400px;
 }
 
 .loading-spinner {
@@ -67,5 +75,11 @@ defineProps<{
   padding: 2rem;
   color: var(--color-text-light);
   grid-column: 1 / -1;
+}
+
+@media (max-width: 768px) {
+  .book-grid.view-grid .books-container {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  }
 }
 </style> 

@@ -11,6 +11,21 @@ export default defineConfig({
     }
   },
   server: {
-    port: 3000
+    port: 3000,
+    strictPort: true,
+    proxy: {
+      '/api/exchange': {
+        target: 'https://open.er-api.com/v6/latest',
+        changeOrigin: true,
+        rewrite: (path) => ''
+      }
+    }
+  },
+  css: {
+    preprocessorOptions: {
+      scss: {
+        additionalData: `@use "@/assets/styles/_variables.scss" as *;`
+      }
+    }
   }
 })
