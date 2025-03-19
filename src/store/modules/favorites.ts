@@ -1,50 +1,81 @@
 // @ts-ignore
-import { Module } from 'vuex'
-import { RootState, FavoritesState } from '../types'
+import { Module, Commit } from 'vuex'
+import { RootState } from '../types'
+import type { Book } from '../types'
+
+interface FavoritesState {
+  favorites: Book[]
+  loading: boolean
+  error: string | null
+}
 
 const state = (): FavoritesState => ({
-  favorites: []
+  favorites: [],
+  loading: false,
+  error: null
 })
 
 const getters = {
-  allFavorites: (state: FavoritesState): number[] => state.favorites,
-  isFavorite: (state: FavoritesState) => (bookId: number): boolean => 
-    state.favorites.includes(bookId)
+  getFavorites: (state: FavoritesState): Book[] => state.favorites,
+  isFavorite: (state: FavoritesState) => (bookId: number): boolean => {
+    return state.favorites.some(book => book.id === bookId)
+  }
 }
 
 const mutations = {
-  SET_FAVORITES(state: FavoritesState, favorites: number[]) {
+  SET_FAVORITES(state: FavoritesState, favorites: Book[]) {
     state.favorites = favorites
   },
-  ADD_FAVORITE(state: FavoritesState, bookId: number) {
-    if (!state.favorites.includes(bookId)) {
-      state.favorites.push(bookId)
+  ADD_TO_FAVORITES(state: FavoritesState, book: Book) {
+    if (!state.favorites.some(f => f.id === book.id)) {
+      state.favorites.push(book)
     }
   },
-  REMOVE_FAVORITE(state: FavoritesState, bookId: number) {
-    state.favorites = state.favorites.filter(id => id !== bookId)
+  REMOVE_FROM_FAVORITES(state: FavoritesState, bookId: number) {
+    state.favorites = state.favorites.filter(book => book.id !== bookId)
+  },
+  SET_LOADING(state: FavoritesState, loading: boolean) {
+    state.loading = loading
+  },
+  SET_ERROR(state: FavoritesState, error: string | null) {
+    state.error = error
   }
 }
 
 const actions = {
-  async initialize({ commit }: any) {
+  async initialize({ commit }: { commit: Commit }) {
     try {
-      const savedFavorites = localStorage.getItem('favorites')
-      if (savedFavorites) {
-        commit('SET_FAVORITES', JSON.parse(savedFavorites))
-      }
+      commit('SET_LOADING', true)
+      commit('SET_ERROR', null)
+      // TODO: localStorage'dan favorileri yükle
+      const favorites: Book[] = []
+      commit('SET_FAVORITES', favorites)
     } catch (error) {
-      console.error('Favorites initialize error:', error)
+      console.error('Favorites initialization error:', error)
+      commit('SET_ERROR', 'Favoriler yüklenirken bir hata oluştu')
+    } finally {
+      commit('SET_LOADING', false)
     }
   },
 
-  toggleFavorite({ commit, state }: any, bookId: number) {
-    if (state.favorites.includes(bookId)) {
-      commit('REMOVE_FAVORITE', bookId)
-    } else {
-      commit('ADD_FAVORITE', bookId)
+  addToFavorites({ commit }: { commit: Commit }, book: Book) {
+    try {
+      commit('ADD_TO_FAVORITES', book)
+      // TODO: localStorage'a kaydet
+    } catch (error) {
+      console.error('Add to favorites error:', error)
+      commit('SET_ERROR', 'Favorilere eklenirken bir hata oluştu')
     }
-    localStorage.setItem('favorites', JSON.stringify(state.favorites))
+  },
+
+  removeFromFavorites({ commit }: { commit: Commit }, bookId: number) {
+    try {
+      commit('REMOVE_FROM_FAVORITES', bookId)
+      // TODO: localStorage'dan kaldır
+    } catch (error) {
+      console.error('Remove from favorites error:', error)
+      commit('SET_ERROR', 'Favorilerden kaldırılırken bir hata oluştu')
+    }
   }
 }
 

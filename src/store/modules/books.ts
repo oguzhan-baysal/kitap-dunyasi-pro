@@ -33,21 +33,41 @@ const getters = {
 
   getFilteredBooks: (state: BooksState): Book[] => {
     return state.books.filter(book => {
-      if (state.filters.category && book.category !== state.filters.category) return false
-      if (state.filters.rating && book.rating < state.filters.rating) return false
-      if (book.price < state.filters.priceRange.min || book.price > state.filters.priceRange.max) return false
+      // Kategori filtresi
+      if (state.filters.category && book.category !== state.filters.category) {
+        return false
+      }
+
+      // Fiyat aralığı filtresi
+      if (book.price < state.filters.priceRange.min || 
+          book.price > state.filters.priceRange.max) {
+        return false
+      }
+
+      // Arama filtresi
       if (state.filters.searchQuery) {
         const query = state.filters.searchQuery.toLowerCase()
-        return book.title.toLowerCase().includes(query) ||
-               book.author.toLowerCase().includes(query) ||
-               book.description.toLowerCase().includes(query)
+        const searchIn = [
+          book.title,
+          book.author,
+          book.description,
+          book.category
+        ].map(text => text.toLowerCase())
+
+        return searchIn.some(text => text.includes(query))
       }
+
       return true
     }).sort((a, b) => {
       const field = state.sort.field as keyof Book
       const order = state.sort.order === 'asc' ? 1 : -1
       const aValue = a[field]
       const bValue = b[field]
+      
+      if (typeof aValue === 'string' && typeof bValue === 'string') {
+        return aValue.localeCompare(bValue) * order
+      }
+      
       if (aValue === undefined || bValue === undefined) return 0
       return aValue > bValue ? order : -order
     })
@@ -280,15 +300,15 @@ const actions = {
     commit('UPDATE_FILTERS', filters)
   },
 
-  updateSort({ commit }: { commit: Commit }, sort: Partial<BooksState['sort']>) {
+  updateSort({ commit }: { commit: Commit }, sort: BooksState['sort']) {
     commit('UPDATE_SORT', sort)
   }
 }
 
-export default {
+export const books: Module<BooksState, RootState> = {
   namespaced: true,
   state,
   getters,
   mutations,
   actions
-} as Module<BooksState, RootState> 
+} 

@@ -8,8 +8,8 @@ const store = useStore<RootState>();
 onMounted(async () => {
   // Initialize store modules
   await store.dispatch('auth/initializeFromStorage');
+  await store.dispatch('books/fetchBooks');
   await store.dispatch('currency/fetchRates');
-  await store.dispatch('books/initialize');
   await store.dispatch('favorites/initialize');
   await store.dispatch('ui/initialize');
 });
@@ -24,13 +24,14 @@ onMounted(async () => {
 <style lang="scss">
 :root {
   // Renkler
-  --color-primary: #{$primary-color};
-  --color-secondary: #{$secondary-color};
-  --color-accent: #{$accent-color};
-  --color-error: #{$error-color};
-  --color-success: #{$success-color};
-  --color-warning: #{$warning-color};
-  --color-info: #{$info-color};
+  --color-primary: #1976d2;
+  --color-primary-dark: #1565c0;
+  --color-secondary: #424242;
+  --color-accent: #82b1ff;
+  --color-error: #ff5252;
+  --color-success: #4caf50;
+  --color-warning: #fb8c00;
+  --color-info: #2196f3;
 
   // Metin renkleri
   --color-text-primary: #333333;
@@ -43,7 +44,7 @@ onMounted(async () => {
   --color-card-bg: #ffffff;
 
   // Kenarlık renkleri
-  --color-border: #{$border-color};
+  --color-border: #e0e0e0;
 }
 
 body {
