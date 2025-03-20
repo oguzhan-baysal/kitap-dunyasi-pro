@@ -18,11 +18,6 @@ const logout = () => {
   <header class="header">
     <nav class="nav">
       <RouterLink to="/" class="logo">Kitap Dünyası Pro</RouterLink>
-      <div class="nav-links">
-        <RouterLink to="/">Ana Sayfa</RouterLink>
-        <RouterLink to="/favorites" v-if="isLoggedIn">Favorilerim</RouterLink>
-        <RouterLink to="/my-books" v-if="isLoggedIn">Kitaplarım</RouterLink>
-      </div>
       <div class="nav-right">
         <CurrencySelector />
         <ThemeToggle />
@@ -62,21 +57,6 @@ const logout = () => {
   font-weight: bold;
   color: var(--color-primary);
   text-decoration: none;
-}
-
-.nav-links {
-  display: flex;
-  gap: 1.5rem;
-}
-
-.nav-links a {
-  color: var(--color-text);
-  text-decoration: none;
-  font-weight: 500;
-}
-
-.nav-links a:hover {
-  color: var(--color-primary);
 }
 
 .nav-right {
