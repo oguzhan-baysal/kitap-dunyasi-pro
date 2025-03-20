@@ -1,44 +1,54 @@
-// @ts-ignore
-import { Module } from 'vuex'
-import { RootState, UIState } from '../types'
+import { Module, Commit } from 'vuex'
+import { RootState } from '../types'
+
+export interface UIState {
+  theme: 'light' | 'dark'
+}
 
 const state = (): UIState => ({
-  theme: localStorage.getItem('theme') as 'light' | 'dark' || 'light'
+  theme: 'light'
 })
 
 const getters = {
-  currentTheme: (state: UIState): string => state.theme
+  currentTheme: (state: UIState) => state.theme,
+  isDarkTheme: (state: UIState) => state.theme === 'dark'
 }
 
 const mutations = {
-  SET_THEME(state: UIState, theme: 'light' | 'dark') {
+  setTheme(state: UIState, theme: 'light' | 'dark') {
     state.theme = theme
+    // Tema değiştiğinde localStorage'a kaydet
+    localStorage.setItem('theme', theme)
+    // HTML elementine tema class'ını ekle
+    document.documentElement.classList.remove('light', 'dark')
+    document.documentElement.classList.add(theme)
   }
 }
 
 const actions = {
-  async initialize({ commit }: any) {
-    try {
-      const savedTheme = localStorage.getItem('theme')
-      if (savedTheme === 'light' || savedTheme === 'dark') {
-        commit('SET_THEME', savedTheme)
-      }
-    } catch (error) {
-      console.error('UI initialize error:', error)
+  initTheme({ commit }: { commit: Commit }) {
+    // Sayfa yüklendiğinde localStorage'dan temayı al
+    const savedTheme = localStorage.getItem('theme') as 'light' | 'dark'
+    if (savedTheme) {
+      commit('setTheme', savedTheme)
+    } else {
+      // Sistem temasını kontrol et
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
+      commit('setTheme', prefersDark ? 'dark' : 'light')
     }
   },
-
-  toggleTheme({ commit, state }: any) {
+  toggleTheme({ commit, state }: { commit: Commit, state: UIState }) {
     const newTheme = state.theme === 'light' ? 'dark' : 'light'
-    commit('SET_THEME', newTheme)
-    localStorage.setItem('theme', newTheme)
+    commit('setTheme', newTheme)
   }
 }
 
-export const ui: Module<UIState, RootState> = {
+const ui: Module<UIState, RootState> = {
   namespaced: true,
   state,
   getters,
   mutations,
   actions
-} 
+}
+
+export default ui 

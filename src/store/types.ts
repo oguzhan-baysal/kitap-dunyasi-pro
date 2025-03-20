@@ -4,6 +4,7 @@ export interface RootState {
   currency: CurrencyState
   favorites: FavoritesState
   auth: AuthState
+  ui: UIState
 }
 
 export interface AuthState {
@@ -64,9 +65,22 @@ export interface BookSort {
 
 export interface BooksState {
   books: Book[]
-  selectedBook: Book | null
+  userBooks: Book[]
+  userFavorites: Book[]
+  currentBook: Book | null
+  currentPage: number
+  itemsPerPage: number
+  hasMore: boolean
   loading: boolean
   error: string | null
-  filters: BookFilters
-  sort: BookSort
+  filters: {
+    category: string | null
+    minPrice: number | null
+    maxPrice: number | null
+    rating: number | null
+  }
+  sort: {
+    field: string
+    order: 'asc' | 'desc'
+  }
 } 

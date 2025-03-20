@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import { useStore } from 'vuex'
+import { useStore } from '@/store'
 import { useField, useForm } from 'vee-validate'
 import * as yup from 'yup'
 
@@ -25,8 +25,8 @@ const schema = yup.object({
 const { handleSubmit, errors } = useForm({
   validationSchema: schema,
   initialValues: {
-    name: store.state.auth.user?.name || '',
-    email: store.state.auth.user?.email || '',
+    name: store.getters['auth/user']?.name || '',
+    email: store.getters['auth/user']?.email || '',
     currentPassword: '',
     newPassword: '',
     confirmPassword: ''

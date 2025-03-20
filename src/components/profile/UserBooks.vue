@@ -1,10 +1,14 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
-import { useStore } from 'vuex'
-import type { Book } from '@/types'
+import { ref, onMounted, computed } from 'vue'
+import { useStore } from '@/store'
+import { useRouter } from 'vue-router'
+import type { Book } from '@/types/book'
 
 const store = useStore()
-const books = ref<Book[]>([])
+const router = useRouter()
+
+const userBooks = computed<Book[]>(() => store.getters['books/userBooks'] || [])
+
 const isLoading = ref(true)
 const errorMessage = ref('')
 
@@ -26,14 +30,8 @@ const loadBooks = async () => {
     isLoading.value = true
     errorMessage.value = ''
 
-    const response = await store.dispatch('books/getUserBooks', {
-      page: currentPage.value,
-      limit: itemsPerPage,
-      sort: selectedSort.value
-    })
-
-    books.value = response.books
-    totalItems.value = response.total
+    await store.dispatch('books/fetchUserBooks')
+    totalItems.value = userBooks.value.length
 
   } catch (error) {
     errorMessage.value = 'Kitaplar yüklenirken bir hata oluştu'
@@ -53,14 +51,13 @@ const handlePageChange = (page: number) => {
   loadBooks()
 }
 
-const handleDelete = async (bookId: string) => {
-  if (!confirm('Bu kitabı silmek istediğinize emin misiniz?')) return
+const editBook = (bookId: string) => {
+  router.push(`/books/${bookId}/edit`)
+}
 
-  try {
-    await store.dispatch('books/deleteBook', bookId)
-    await loadBooks()
-  } catch (error) {
-    errorMessage.value = 'Kitap silinirken bir hata oluştu'
+const deleteBook = (bookId: string) => {
+  if (confirm('Bu kitabı silmek istediğinizden emin misiniz?')) {
+    store.dispatch('books/deleteBook', bookId)
   }
 }
 
@@ -101,16 +98,14 @@ onMounted(loadBooks)
       {{ errorMessage }}
     </div>
 
-    <div v-else-if="books.length === 0" class="empty-state">
-      <p>Henüz kitap eklememişsiniz.</p>
-      <router-link to="/books/new" class="add-button">
-        İlk Kitabınızı Ekleyin
-      </router-link>
+    <div v-else-if="userBooks.length === 0" class="empty-state">
+      <i class="fas fa-book-open"></i>
+      <p>Henüz kitap eklememişsiniz</p>
     </div>
 
     <div v-else class="books-grid">
       <div 
-        v-for="book in books"
+        v-for="book in userBooks"
         :key="book.id"
         class="book-card"
       >
@@ -123,23 +118,15 @@ onMounted(loadBooks)
         <div class="book-info">
           <h3 class="book-title">{{ book.title }}</h3>
           <p class="book-author">{{ book.author }}</p>
-          <p class="book-price">{{ book.price }} TL</p>
-        </div>
-
-        <div class="card-actions">
-          <router-link 
-            :to="`/books/${book.id}/edit`"
-            class="edit-button"
-          >
-            Düzenle
-          </router-link>
-
-          <button 
-            class="delete-button"
-            @click="handleDelete(book.id)"
-          >
-            Sil
-          </button>
+          <div class="book-actions">
+            <button @click="editBook(book.id)" class="btn-edit">
+              <i class="fas fa-edit"></i>
+              Düzenle
+            </button>
+            <button @click="deleteBook(book.id)" class="btn-delete">
+              Sil
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -159,8 +146,20 @@ onMounted(loadBooks)
 </template>
 
 <style lang="scss" scoped>
+@use '@/assets/styles/_variables.scss' as *;
+
 .user-books {
-  padding: 2rem;
+  background: var(--color-background-soft);
+  padding: $spacing-6;
+  border-radius: $border-radius-lg;
+  box-shadow: $shadow-sm;
+  margin-top: $spacing-8;
+
+  h2 {
+    color: var(--color-heading);
+    margin-bottom: $spacing-6;
+    font-size: $font-size-xl;
+  }
 }
 
 .header {
@@ -168,11 +167,6 @@ onMounted(loadBooks)
   justify-content: space-between;
   align-items: center;
   margin-bottom: 2rem;
-
-  h2 {
-    color: var(--color-text-primary);
-    margin: 0;
-  }
 }
 
 .actions {
@@ -219,94 +213,103 @@ onMounted(loadBooks)
 
 .empty-state {
   text-align: center;
-  padding: 4rem 2rem;
-  color: var(--color-text-secondary);
+  padding: $spacing-8;
+  color: var(--color-text-light);
+
+  i {
+    font-size: $font-size-3xl;
+    margin-bottom: $spacing-4;
+  }
 
   p {
-    margin-bottom: 1rem;
+    font-size: $font-size-lg;
   }
 }
 
 .books-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 2rem;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: $spacing-6;
 }
 
 .book-card {
-  background: var(--color-card-bg);
-  border-radius: 8px;
+  background: var(--color-background);
+  border-radius: $border-radius;
   overflow: hidden;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: $shadow-sm;
   transition: transform 0.2s;
 
   &:hover {
-    transform: translateY(-4px);
+    transform: translateY(-2px);
   }
 }
 
 .book-cover {
   width: 100%;
-  height: 280px;
+  height: 200px;
   object-fit: cover;
 }
 
 .book-info {
-  padding: 1rem;
+  padding: $spacing-4;
 
   .book-title {
-    font-size: 1rem;
+    font-size: $font-size-lg;
     font-weight: 500;
-    color: var(--color-text-primary);
-    margin: 0 0 0.5rem;
+    color: var(--color-heading);
+    margin: 0 0 $spacing-2;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
   }
 
   .book-author {
-    font-size: 0.875rem;
-    color: var(--color-text-secondary);
-    margin: 0 0 0.5rem;
-  }
-
-  .book-price {
-    font-weight: 500;
-    color: var(--color-primary);
-    margin: 0;
+    color: var(--color-text-light);
+    font-size: $font-size-sm;
+    margin-bottom: $spacing-4;
   }
 }
 
-.card-actions {
+.book-actions {
   display: flex;
-  padding: 1rem;
-  gap: 0.5rem;
-  border-top: 1px solid var(--color-border);
+  gap: $spacing-2;
+  margin-top: $spacing-4;
 
-  .edit-button, .delete-button {
+  button {
     flex: 1;
-    padding: 0.5rem;
-    border: none;
+    padding: $spacing-2 $spacing-4;
     border-radius: 4px;
-    font-size: 0.875rem;
+    font-size: $font-size-sm;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: $spacing-2;
     cursor: pointer;
-    text-align: center;
-    text-decoration: none;
-    transition: opacity 0.2s;
+    transition: all 0.2s;
+    border: none;
+    font-weight: 500;
+    min-width: 100px;
+    color: white;
 
-    &:hover {
-      opacity: 0.9;
+    i {
+      font-size: $font-size-base;
     }
-  }
 
-  .edit-button {
-    background: var(--color-primary);
-    color: white;
-  }
+    &.btn-edit {
+      background: var(--color-primary);
 
-  .delete-button {
-    background: var(--color-error);
-    color: white;
+      &:hover {
+        background: var(--color-primary-dark);
+      }
+    }
+
+    &.btn-delete {
+      background: #dc3545;
+
+      &:hover {
+        background: #c82333;
+      }
+    }
   }
 }
 
@@ -349,12 +352,17 @@ onMounted(loadBooks)
   }
 
   .books-grid {
-    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-    gap: 1rem;
+    grid-template-columns: repeat(2, 1fr);
   }
 
   .book-cover {
     height: 220px;
+  }
+}
+
+@media (max-width: 480px) {
+  .books-grid {
+    grid-template-columns: 1fr;
   }
 }
 </style> 

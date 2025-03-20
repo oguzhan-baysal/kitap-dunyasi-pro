@@ -1,21 +1,29 @@
 import { createStore } from 'vuex'
-import { RootState } from './types'
-import { books } from './modules/books'
 import { auth } from './modules/auth'
+import { books } from './modules/books'
 import { currency } from './modules/currency'
-import { favorites } from './modules/favorites'
 import { comments } from './modules/comments'
+import favorites from './modules/favorites'
+import ui from './modules/ui'
+import type { RootState } from './types'
 
-export const store = createStore<RootState>({
-  state: {
-    version: '1.0.0'
-  },
+const store = createStore<RootState>({
+  state: () => ({
+    version: '1.0.0',
+    books: (books.state as () => any)(),
+    auth: (auth.state as () => any)(),
+    currency: (currency.state as () => any)(),
+    favorites: (favorites.state as () => any)(),
+    comments: (comments.state as () => any)(),
+    ui: (ui.state as () => any)()
+  }),
   modules: {
-    books,
     auth,
+    books,
     currency,
     favorites,
-    comments
+    comments,
+    ui
   }
 })
 

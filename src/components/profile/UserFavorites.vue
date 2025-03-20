@@ -1,10 +1,14 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
-import { useStore } from 'vuex'
-import type { Book } from '@/types'
+import { ref, onMounted, computed } from 'vue'
+import { useStore } from '@/store'
+import { useRouter } from 'vue-router'
+import type { Book } from '@/types/book'
 
 const store = useStore()
-const favorites = ref<Book[]>([])
+const router = useRouter()
+
+const userFavorites = computed<Book[]>(() => store.getters['books/userFavorites'] || [])
+
 const isLoading = ref(true)
 const errorMessage = ref('')
 
@@ -28,14 +32,7 @@ const loadFavorites = async () => {
     isLoading.value = true
     errorMessage.value = ''
 
-    const response = await store.dispatch('favorites/getFavorites', {
-      page: currentPage.value,
-      limit: itemsPerPage,
-      sort: selectedSort.value
-    })
-
-    favorites.value = response.books
-    totalItems.value = response.total
+    await store.dispatch('books/fetchUserFavorites')
 
   } catch (error) {
     errorMessage.value = 'Favoriler yüklenirken bir hata oluştu'
@@ -62,6 +59,14 @@ const handleRemoveFavorite = async (bookId: string) => {
   } catch (error) {
     errorMessage.value = 'Kitap favorilerden çıkarılırken bir hata oluştu'
   }
+}
+
+function viewBook(bookId: string) {
+  router.push(`/books/${bookId}`)
+}
+
+function removeFavorite(bookId: string) {
+  store.dispatch('books/toggleFavorite', bookId)
 }
 
 onMounted(loadFavorites)
@@ -97,45 +102,26 @@ onMounted(loadFavorites)
       {{ errorMessage }}
     </div>
 
-    <div v-else-if="favorites.length === 0" class="empty-state">
-      <p>Henüz favori kitabınız yok.</p>
-      <router-link to="/" class="browse-button">
-        Kitaplara Göz At
-      </router-link>
+    <div v-else-if="userFavorites.length === 0" class="empty-state">
+      <i class="fas fa-heart"></i>
+      <p>Henüz favori kitabınız yok</p>
     </div>
 
     <div v-else class="favorites-grid">
-      <div 
-        v-for="book in favorites"
-        :key="book.id"
-        class="book-card"
-      >
-        <router-link 
-          :to="`/books/${book.id}`"
-          class="book-link"
-        >
-          <img 
-            :src="book.coverImage" 
-            :alt="book.title"
-            class="book-cover"
-          >
-          
-          <div class="book-info">
-            <h3 class="book-title">{{ book.title }}</h3>
-            <p class="book-author">{{ book.author }}</p>
-            <p class="book-price">{{ book.price }} TL</p>
+      <div v-for="book in userFavorites" :key="book.id" class="favorite-card">
+        <img :src="book.coverImage" :alt="book.title" class="book-cover">
+        <div class="book-info">
+          <h3>{{ book.title }}</h3>
+          <p class="author">{{ book.author }}</p>
+          <div class="book-actions">
+            <button @click="viewBook(book.id)" class="btn-view">
+              <i class="fas fa-eye"></i>
+              İncele
+            </button>
+            <button @click="removeFavorite(book.id)" class="btn-remove">
+              Favorilerden Çıkar
+            </button>
           </div>
-        </router-link>
-
-        <div class="card-actions">
-          <button 
-            class="remove-button"
-            @click="handleRemoveFavorite(book.id)"
-            title="Favorilerden Çıkar"
-          >
-            <span class="icon">❤️</span>
-            Favorilerden Çıkar
-          </button>
         </div>
       </div>
     </div>
@@ -155,8 +141,20 @@ onMounted(loadFavorites)
 </template>
 
 <style lang="scss" scoped>
+@use '@/assets/styles/_variables.scss' as *;
+
 .user-favorites {
-  padding: 2rem;
+  background: var(--color-background-soft);
+  padding: $spacing-6;
+  border-radius: $border-radius-lg;
+  box-shadow: $shadow-sm;
+  margin-top: $spacing-8;
+
+  h2 {
+    color: var(--color-heading);
+    margin-bottom: $spacing-6;
+    font-size: $font-size-xl;
+  }
 }
 
 .header {
@@ -164,11 +162,6 @@ onMounted(loadFavorites)
   justify-content: space-between;
   align-items: center;
   margin-bottom: 2rem;
-
-  h2 {
-    color: var(--color-text-primary);
-    margin: 0;
-  }
 }
 
 .actions {
@@ -200,109 +193,98 @@ onMounted(loadFavorites)
 
 .empty-state {
   text-align: center;
-  padding: 4rem 2rem;
-  color: var(--color-text-secondary);
+  padding: $spacing-8;
+  color: var(--color-text-light);
+
+  i {
+    font-size: $font-size-3xl;
+    margin-bottom: $spacing-4;
+  }
 
   p {
-    margin-bottom: 1rem;
-  }
-}
-
-.browse-button {
-  display: inline-block;
-  padding: 0.75rem 1.5rem;
-  background: var(--color-primary);
-  color: white;
-  text-decoration: none;
-  border-radius: 4px;
-  transition: opacity 0.2s;
-
-  &:hover {
-    opacity: 0.9;
+    font-size: $font-size-lg;
   }
 }
 
 .favorites-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 2rem;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: $spacing-6;
 }
 
-.book-card {
-  background: var(--color-card-bg);
-  border-radius: 8px;
+.favorite-card {
+  background: var(--color-background);
+  border-radius: $border-radius;
   overflow: hidden;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: $shadow-sm;
   transition: transform 0.2s;
 
   &:hover {
-    transform: translateY(-4px);
-  }
-}
-
-.book-link {
-  text-decoration: none;
-  color: inherit;
-  display: block;
-}
-
-.book-cover {
-  width: 100%;
-  height: 280px;
-  object-fit: cover;
-}
-
-.book-info {
-  padding: 1rem;
-
-  .book-title {
-    font-size: 1rem;
-    font-weight: 500;
-    color: var(--color-text-primary);
-    margin: 0 0 0.5rem;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    transform: translateY(-2px);
   }
 
-  .book-author {
-    font-size: 0.875rem;
-    color: var(--color-text-secondary);
-    margin: 0 0 0.5rem;
-  }
-
-  .book-price {
-    font-weight: 500;
-    color: var(--color-primary);
-    margin: 0;
-  }
-}
-
-.card-actions {
-  padding: 1rem;
-  border-top: 1px solid var(--color-border);
-
-  .remove-button {
+  .book-cover {
     width: 100%;
-    padding: 0.5rem;
-    border: none;
-    border-radius: 4px;
-    background: var(--color-error);
-    color: white;
-    font-size: 0.875rem;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    transition: opacity 0.2s;
+    height: 200px;
+    object-fit: cover;
+  }
 
-    &:hover {
-      opacity: 0.9;
+  .book-info {
+    padding: $spacing-4;
+
+    h3 {
+      font-size: $font-size-lg;
+      color: var(--color-heading);
+      margin-bottom: $spacing-2;
     }
 
-    .icon {
-      font-size: 1rem;
+    .author {
+      color: var(--color-text-light);
+      font-size: $font-size-sm;
+      margin-bottom: $spacing-4;
+    }
+  }
+}
+
+.book-actions {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-2;
+
+  button {
+    width: 100%;
+    padding: $spacing-2 $spacing-4;
+    border-radius: 4px;
+    font-size: $font-size-sm;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: $spacing-2;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: none;
+    font-weight: 500;
+    min-height: 36px;
+    color: white;
+
+    i {
+      font-size: $font-size-base;
+    }
+
+    &.btn-view {
+      background: var(--color-primary);
+
+      &:hover {
+        background: var(--color-primary-dark);
+      }
+    }
+
+    &.btn-remove {
+      background: #dc3545;
+
+      &:hover {
+        background: #c82333;
+      }
     }
   }
 }
@@ -346,12 +328,17 @@ onMounted(loadFavorites)
   }
 
   .favorites-grid {
-    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-    gap: 1rem;
+    grid-template-columns: repeat(2, 1fr);
   }
 
   .book-cover {
     height: 220px;
+  }
+}
+
+@media (max-width: 480px) {
+  .favorites-grid {
+    grid-template-columns: 1fr;
   }
 }
 </style> 

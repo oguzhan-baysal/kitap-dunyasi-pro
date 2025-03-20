@@ -11,7 +11,7 @@ interface Comment {
   createdAt: string
 }
 
-interface CommentsState {
+export interface CommentsState {
   comments: Comment[]
   loading: boolean
   error: string | null
@@ -48,37 +48,36 @@ const mutations = {
 
 const actions = {
   async fetchBookComments({ commit }: { commit: Commit }, bookId: number) {
+    commit('setLoading', true)
+    commit('setError', null)
+
     try {
-      commit('setLoading', true)
-      commit('setError', null)
-
-      // Simüle edilmiş API çağrısı
-      await new Promise(resolve => setTimeout(resolve, 500))
-
+      // API çağrısı simülasyonu
+      await new Promise(resolve => setTimeout(resolve, 1000))
+      
       const mockComments: Comment[] = [
         {
           id: 1,
-          bookId,
+          bookId: bookId,
           userId: 1,
-          username: "Ahmet Yılmaz",
-          content: "Harika bir kitap, kesinlikle tavsiye ederim!",
+          username: 'John Doe',
+          content: 'Harika bir kitap!',
           rating: 5,
-          createdAt: "2024-03-20T10:30:00Z"
+          createdAt: new Date().toISOString()
         },
         {
           id: 2,
-          bookId,
+          bookId: bookId,
           userId: 2,
-          username: "Ayşe Demir",
-          content: "Çok etkileyici bir anlatımı var.",
+          username: 'Jane Smith',
+          content: 'Çok etkileyici.',
           rating: 4,
-          createdAt: "2024-03-19T15:45:00Z"
+          createdAt: new Date().toISOString()
         }
       ]
 
       commit('setComments', mockComments)
     } catch (error) {
-      console.error('Yorumlar yüklenirken hata:', error)
       commit('setError', 'Yorumlar yüklenirken bir hata oluştu')
     } finally {
       commit('setLoading', false)
@@ -86,22 +85,22 @@ const actions = {
   },
 
   async addComment({ commit }: { commit: Commit }, comment: Omit<Comment, 'id' | 'createdAt'>) {
+    commit('setLoading', true)
+    commit('setError', null)
+
     try {
-      commit('setLoading', true)
-      commit('setError', null)
-
-      // Simüle edilmiş API çağrısı
-      await new Promise(resolve => setTimeout(resolve, 500))
-
+      // API çağrısı simülasyonu
+      await new Promise(resolve => setTimeout(resolve, 1000))
+      
       const newComment: Comment = {
-        ...comment,
-        id: Math.floor(Math.random() * 1000) + 1,
-        createdAt: new Date().toISOString()
+        id: Date.now(),
+        createdAt: new Date().toISOString(),
+        ...comment
       }
 
       commit('addComment', newComment)
+      return newComment
     } catch (error) {
-      console.error('Yorum eklenirken hata:', error)
       commit('setError', 'Yorum eklenirken bir hata oluştu')
       throw error
     } finally {

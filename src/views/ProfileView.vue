@@ -3,6 +3,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useStore } from '@/store'
 import { useRouter } from 'vue-router'
 import UserInfo from '@/components/profile/UserInfo.vue'
+import UserStats from '@/components/profile/UserStats.vue'
 import UserBooks from '@/components/profile/UserBooks.vue'
 import UserFavorites from '@/components/profile/UserFavorites.vue'
 import UserComments from '@/components/profile/UserComments.vue'
@@ -13,6 +14,7 @@ const router = useRouter()
 const loading = computed(() => store.getters['auth/loading'])
 const error = computed(() => store.getters['auth/error'])
 const currentUser = computed(() => store.getters['auth/currentUser'])
+const user = computed(() => store.getters['auth/user'])
 
 const isUpdating = ref(false)
 const isChangingPassword = ref(false)
@@ -32,6 +34,10 @@ onMounted(() => {
   if (currentUser.value) {
     profileForm.value.name = currentUser.value.name
     profileForm.value.email = currentUser.value.email
+    
+    // Kullanıcı kitaplarını ve favorileri yükle
+    store.dispatch('books/fetchUserBooks')
+    store.dispatch('books/fetchUserFavorites')
   }
 })
 
@@ -84,7 +90,7 @@ const handlePasswordChange = async () => {
   <div class="profile-view">
     <div class="profile-header">
       <h1>Profilim</h1>
-      <router-link to="/books/add" class="add-book-button">
+      <router-link to="/books/add" class="add-book-btn">
         <i class="fas fa-plus"></i>
         Yeni Kitap Ekle
       </router-link>
@@ -98,85 +104,14 @@ const handlePasswordChange = async () => {
       {{ error }}
     </div>
 
-    <div v-else class="profile-container">
-      <!-- Profil Bilgileri -->
-      <div class="profile-section">
-        <h2>Profil Bilgileri</h2>
-        <form @submit.prevent="handleProfileUpdate" class="profile-form">
-          <div class="form-group">
-            <label for="name">Ad Soyad</label>
-            <input
-              type="text"
-              id="name"
-              v-model="profileForm.name"
-              required
-              :disabled="isUpdating"
-            >
-          </div>
-
-          <div class="form-group">
-            <label for="email">E-posta</label>
-            <input
-              type="email"
-              id="email"
-              v-model="profileForm.email"
-              required
-              :disabled="isUpdating"
-            >
-          </div>
-
-          <div class="form-actions">
-            <button type="submit" :disabled="isUpdating">
-              {{ isUpdating ? 'Güncelleniyor...' : 'Güncelle' }}
-            </button>
-          </div>
-        </form>
+    <div v-else class="profile-content">
+      <div class="main-section">
+        <UserInfo :user="user" />
+        <UserStats />
       </div>
 
-      <!-- Şifre Değiştirme -->
-      <div class="profile-section">
-        <h2>Şifre Değiştir</h2>
-        <form @submit.prevent="handlePasswordChange" class="password-form">
-          <div class="form-group">
-            <label for="currentPassword">Mevcut Şifre</label>
-            <input
-              type="password"
-              id="currentPassword"
-              v-model="passwordForm.currentPassword"
-              required
-              :disabled="isChangingPassword"
-            >
-          </div>
-
-          <div class="form-group">
-            <label for="newPassword">Yeni Şifre</label>
-            <input
-              type="password"
-              id="newPassword"
-              v-model="passwordForm.newPassword"
-              required
-              :disabled="isChangingPassword"
-            >
-          </div>
-
-          <div class="form-group">
-            <label for="confirmPassword">Yeni Şifre (Tekrar)</label>
-            <input
-              type="password"
-              id="confirmPassword"
-              v-model="passwordForm.confirmPassword"
-              required
-              :disabled="isChangingPassword"
-            >
-          </div>
-
-          <div class="form-actions">
-            <button type="submit" :disabled="isChangingPassword">
-              {{ isChangingPassword ? 'Değiştiriliyor...' : 'Şifreyi Değiştir' }}
-            </button>
-          </div>
-        </form>
-      </div>
+      <UserBooks />
+      <UserFavorites />
     </div>
   </div>
 </template>
@@ -185,14 +120,9 @@ const handlePasswordChange = async () => {
 @use '@/assets/styles/_variables.scss' as *;
 
 .profile-view {
-  max-width: 800px;
+  max-width: 1200px;
   margin: 0 auto;
   padding: $spacing-6;
-
-  h1 {
-    color: var(--color-heading);
-    margin-bottom: 0;
-  }
 }
 
 .profile-header {
@@ -200,101 +130,41 @@ const handlePasswordChange = async () => {
   justify-content: space-between;
   align-items: center;
   margin-bottom: $spacing-8;
-}
 
-.add-book-button {
-  display: inline-flex;
-  align-items: center;
-  gap: $spacing-2;
-  padding: $spacing-3 $spacing-4;
-  background: var(--color-primary);
-  color: white;
-  border: none;
-  border-radius: $border-radius;
-  font-weight: $font-weight-medium;
-  text-decoration: none;
-  transition: background-color 0.2s;
-
-  i {
-    font-size: $font-size-lg;
-  }
-
-  &:hover {
-    background: var(--color-primary-dark);
-  }
-}
-
-.profile-container {
-  display: grid;
-  gap: 2rem;
-}
-
-.profile-section {
-  background: var(--color-background-soft);
-  padding: 2rem;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-
-  h2 {
+  h1 {
     color: var(--color-heading);
-    margin-bottom: 1.5rem;
-    font-size: 1.5rem;
-  }
-}
-
-.form-group {
-  margin-bottom: 1.5rem;
-
-  label {
-    display: block;
-    margin-bottom: 0.5rem;
-    color: var(--color-text);
-    font-weight: 500;
+    font-size: $font-size-2xl;
+    margin: 0;
   }
 
-  input {
-    width: 100%;
-    padding: 0.75rem;
-    border: 1px solid var(--color-border);
-    border-radius: 4px;
-    background: var(--color-background);
-    color: var(--color-text);
-    font-size: 1rem;
-
-    &:focus {
-      outline: none;
-      border-color: var(--color-primary);
-      box-shadow: 0 0 0 2px rgba(var(--color-primary-rgb), 0.1);
-    }
-
-    &:disabled {
-      opacity: 0.7;
-      cursor: not-allowed;
-    }
-  }
-}
-
-.form-actions {
-  margin-top: 2rem;
-
-  button {
+  .add-book-btn {
+    display: flex;
+    align-items: center;
+    gap: $spacing-2;
+    padding: $spacing-3 $spacing-6;
     background: var(--color-primary);
     color: white;
-    border: none;
-    padding: 0.75rem 1.5rem;
-    border-radius: 4px;
-    font-size: 1rem;
-    cursor: pointer;
+    border-radius: $border-radius;
+    text-decoration: none;
+    font-weight: $font-weight-medium;
     transition: background-color 0.2s;
 
-    &:hover:not(:disabled) {
+    &:hover {
       background: var(--color-primary-dark);
     }
 
-    &:disabled {
-      opacity: 0.7;
-      cursor: not-allowed;
+    i {
+      font-size: $font-size-lg;
     }
+  }
+}
+
+.profile-content {
+  .main-section {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: $spacing-6;
+    margin-bottom: $spacing-8;
   }
 }
 
@@ -312,13 +182,28 @@ const handlePasswordChange = async () => {
   margin-bottom: 1rem;
 }
 
+@media (max-width: 1024px) {
+  .profile-content {
+    .main-section {
+      grid-template-columns: 1fr;
+    }
+  }
+}
+
 @media (max-width: 768px) {
   .profile-view {
-    padding: 1rem;
+    padding: $spacing-4;
   }
 
-  .profile-section {
-    padding: 1.5rem;
+  .profile-header {
+    flex-direction: column;
+    gap: $spacing-4;
+    text-align: center;
+
+    .add-book-btn {
+      width: 100%;
+      justify-content: center;
+    }
   }
 }
 </style> 
