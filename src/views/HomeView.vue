@@ -4,6 +4,7 @@ import { useStore } from '@/store'
 import BookSlider from '@/components/books/BookSlider.vue'
 import BookCard from '@/components/books/BookCard.vue'
 import BookListItem from '@/components/books/BookListItem.vue'
+import CurrencySelector from '@/components/ui/CurrencySelector.vue'
 import { useInfiniteScroll } from '@/composables/useInfiniteScroll'
 import { useViewMode } from '@/composables/useViewMode'
 
@@ -22,14 +23,14 @@ const sortOptions = [
 const currentSort = computed(() => store.state.books.sort)
 
 const updateSort = (field: string) => {
-  const currentOrder = currentSort.value.field === field ? currentSort.value.order : null
+  const currentOrder = currentSort.field === field ? currentSort.order : null
   const newOrder = !currentOrder || currentOrder === 'desc' ? 'asc' : 'desc'
   store.commit('books/UPDATE_SORT', { field, order: newOrder })
 }
 
 const getSortIcon = (field: string) => {
-  if (currentSort.value.field !== field) return 'fas fa-sort'
-  return currentSort.value.order === 'asc' ? 'fas fa-sort-up' : 'fas fa-sort-down'
+  if (currentSort.field !== field) return 'fas fa-sort'
+  return currentSort.order === 'asc' ? 'fas fa-sort-up' : 'fas fa-sort-down'
 }
 
 const loadMore = async () => {
@@ -59,35 +60,23 @@ onMounted(async () => {
           <h2>Kitaplar</h2>
           <div class="filter-buttons">
             <button 
-              :class="{ active: currentSort === 'name' }"
-              @click="updateSort('name')"
+              v-for="option in sortOptions"
+              :key="option.field"
+              :class="{ active: currentSort.field === option.field }"
+              @click="updateSort(option.field)"
             >
-              İsme Göre
+              {{ option.label }}
+              <i :class="getSortIcon(option.field)"></i>
             </button>
-            <button 
-              :class="{ active: currentSort === 'price' }"
-              @click="updateSort('price')"
-            >
-              Fiyata Göre
-            </button>
-            <button 
-              :class="{ active: currentSort === 'rating' }"
-              @click="updateSort('rating')"
-            >
-              Puana Göre
-            </button>
-            <button 
-              :class="{ active: currentSort === 'date' }"
-              @click="updateSort('date')"
-            >
-              Tarihe Göre
-            </button>
-            <button 
-              class="view-toggle"
-              @click="toggleViewMode"
-            >
-              {{ viewMode === 'grid' ? 'Liste Görünümü' : 'Grid Görünümü' }}
-            </button>
+            <div class="view-controls">
+              <CurrencySelector />
+              <button 
+                class="view-toggle"
+                @click="toggleViewMode"
+              >
+                {{ viewMode === 'grid' ? 'Liste Görünümü' : 'Grid Görünümü' }}
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -188,6 +177,13 @@ onMounted(async () => {
       gap: $spacing-2;
       align-items: center;
       flex: 1;
+
+      .view-controls {
+        display: flex;
+        gap: $spacing-2;
+        align-items: center;
+        margin-left: auto;
+      }
 
       button {
         padding: $spacing-2 $spacing-4;

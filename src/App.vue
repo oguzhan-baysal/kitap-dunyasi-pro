@@ -28,6 +28,7 @@ onMounted(async () => {
   
   // Döviz kurlarını yükle
   await store.dispatch('currency/fetchRates');
+  store.dispatch('currency/startAutoUpdate');
 });
 </script>
 

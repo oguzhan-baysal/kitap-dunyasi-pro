@@ -28,6 +28,7 @@ export interface CurrencyState {
   selectedCurrency: string
   loading: boolean
   error: string | null
+  lastUpdate: number | null
 }
 
 export interface FavoritesState {

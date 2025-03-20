@@ -11,12 +11,13 @@ const store = useStore()
 const defaultImage = '/images/books/placeholder.jpg'
 
 const formattedPrice = computed(() => {
-  const rate = store.getters['currency/getRate']('TRY')
+  const selectedCurrency = store.getters['currency/getSelectedCurrency']
+  const rate = store.getters['currency/getRate'](selectedCurrency)
   const price = props.book.price * rate
 
   return new Intl.NumberFormat('tr-TR', {
     style: 'currency',
-    currency: 'TRY'
+    currency: selectedCurrency
   }).format(price)
 })
 

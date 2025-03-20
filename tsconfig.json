@@ -9,7 +9,7 @@
     "resolveJsonModule": true,
     "esModuleInterop": true,
     "lib": ["ES2018", "DOM"],
-    "types": ["vite/client", "vuex"],
+    "types": ["vite/client", "vuex", "node"],
     "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"]
