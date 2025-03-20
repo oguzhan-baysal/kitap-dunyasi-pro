@@ -34,36 +34,39 @@ const handleImageError = (e: Event) => {
 
 <template>
   <div class="book-card">
-    <div class="book-image">
-      <img :src="book.coverImage" :alt="book.title" class="book-cover" @error="handleImageError">
-      <button 
-        class="favorite-button"
-        :class="{ active: isFavorite }"
-        @click="toggleFavorite"
-      >
-        <i class="fa-heart" :class="isFavorite ? 'fas' : 'far'"></i>
-      </button>
-    </div>
-    
-    <div class="book-info">
-      <h3 class="book-title">{{ book.title }}</h3>
-      <p class="book-author">{{ book.author }}</p>
-      <p class="book-description">{{ book.description }}</p>
-      <div class="book-price">{{ formattedPrice }}</div>
-      <div class="book-rating">
-        <span class="stars">★★★★★</span>
-        <span class="rating-value">{{ book.rating }}</span>
+    <router-link :to="{ name: 'book-detail', params: { id: book.id }}" class="book-link">
+      <div class="book-image">
+        <img 
+          :src="book.coverImage" 
+          :alt="book.title"
+          class="book-cover"
+          @error="handleImageError"
+        />
       </div>
       
-      <div class="book-actions">
-        <router-link 
-          :to="{ name: 'book-detail', params: { id: book.id }}"
-          class="view-button"
-        >
-          İncele
-        </router-link>
+      <div class="book-info">
+        <h3 class="book-title">{{ book.title }}</h3>
+        <p class="book-author">{{ book.author }}</p>
+        <p class="book-description">{{ book.description }}</p>
+        <p class="book-price">{{ formattedPrice }}</p>
+        
+        <div class="book-rating">
+          <div class="stars">
+            <i class="fas fa-star" v-for="n in Math.floor(book.rating)" :key="n"></i>
+            <i class="fas fa-star-half-alt" v-if="book.rating % 1 >= 0.5"></i>
+          </div>
+          <span class="rating-value">({{ book.rating }})</span>
+        </div>
       </div>
-    </div>
+    </router-link>
+
+    <button 
+      class="favorite-button"
+      @click="toggleFavorite"
+      :class="{ active: isFavorite }"
+    >
+      <i class="fas fa-heart"></i>
+    </button>
   </div>
 </template>
 
@@ -185,25 +188,11 @@ const handleImageError = (e: Event) => {
   }
 }
 
-.book-actions {
-  display: flex;
-  gap: $spacing-2;
-}
-
-.view-button {
-  flex: 1;
-  padding: $spacing-2;
-  background: var(--color-primary);
-  color: white;
+.book-link {
   text-decoration: none;
-  border-radius: $border-radius;
-  text-align: center;
-  font-size: $font-size-sm;
-  font-weight: $font-weight-medium;
-  transition: all 0.2s;
-  
-  &:hover {
-    background: var(--color-primary-dark);
-  }
+  color: inherit;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
 }
 </style> 

@@ -3,7 +3,8 @@ import HomeView from '@/views/HomeView.vue';
 import LoginView from '@/views/auth/LoginView.vue';
 import RegisterView from '@/views/auth/RegisterView.vue';
 import ForgotPasswordView from '@/views/auth/ForgotPasswordView.vue';
-import { useStore } from 'vuex';
+import BookDetail from '@/views/BookDetail.vue';
+import store from '@/store';
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -25,9 +26,10 @@ const router = createRouter({
       },
     },
     {
-      path: '/book/:id',
+      path: '/books/:id',
       name: 'book-detail',
-      component: () => import('@/views/BookDetail.vue'),
+      component: BookDetail,
+      props: true,
       meta: {
         title: 'Kitap Detayı',
       },
@@ -102,11 +104,10 @@ const router = createRouter({
 
 // Navigation Guards
 router.beforeEach((to, from, next) => {
-  const store = useStore();
   const isAuthenticated = store.getters['auth/isAuthenticated'];
 
   // Update page title
-  document.title = `${to.meta.title} - Kitap Dünyası Pro`;
+  document.title = `${to.meta.title} - Kitap Dünyası` || 'Kitap Dünyası';
 
   // Giriş gerektiren rotalar
   if (to.meta.requiresAuth && !isAuthenticated) {
@@ -121,6 +122,11 @@ router.beforeEach((to, from, next) => {
   }
 
   next();
+});
+
+// Sayfa geçişlerinde scroll pozisyonunu sıfırla
+router.afterEach((to, from) => {
+  window.scrollTo(0, 0);
 });
 
 export default router; 

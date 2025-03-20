@@ -99,6 +99,16 @@ const getters = {
     })
 
     return filteredBooks
+  },
+
+  getBookById: (state: BooksState) => (id: number) => {
+    return state.books.find(book => book.id === id)
+  },
+
+  getRelatedBooks: (state: BooksState) => ({ category, excludeId, limit }: { category: string, excludeId: number, limit: number }) => {
+    return state.books
+      .filter(book => book.category === category && book.id !== excludeId)
+      .slice(0, limit)
   }
 }
 
@@ -159,7 +169,7 @@ const actions = {
           id: 1,
           title: "1984",
           author: "George Orwell",
-          description: "Distopik bir gelecekte geçen, gözetim toplumunu eleştiren başyapıt...",
+          description: "Distopik bir gelecekte geçen, gözetim toplumunu ve totaliter rejimi eleştiren başyapıt...",
           price: 45.99,
           rating: 4.8,
           publishDate: "1949-06-08",
@@ -171,7 +181,7 @@ const actions = {
           id: 2,
           title: "Atomik Alışkanlıklar",
           author: "James Clear",
-          description: "Küçük değişikliklerle büyük sonuçlar elde etmenin kanıtlanmış yolu...",
+          description: "Küçük değişikliklerle büyük sonuçlar elde etmenin bilimsel yöntemlerini anlatan kişisel gelişim kitabı...",
           price: 52.99,
           rating: 4.9,
           publishDate: "2018-10-16",
@@ -183,7 +193,7 @@ const actions = {
           id: 3,
           title: "Suç ve Ceza",
           author: "Fyodor Dostoyevski",
-          description: "İnsanın karanlık yönlerini ve vicdan kavramını sorgulayan başyapıt...",
+          description: "İnsanın karanlık yönlerini ve vicdan kavramını derinlemesine inceleyen psikolojik roman...",
           price: 49.99,
           rating: 4.7,
           publishDate: "1866-01-01",
@@ -207,7 +217,7 @@ const actions = {
           id: 5,
           title: "Yüzüklerin Efendisi",
           author: "J.R.R. Tolkien",
-          description: "Orta Dünya'da geçen epik fantastik kurgu serisi...",
+          description: "Fantastik edebiyatın başyapıtı, epik bir macera...",
           price: 89.99,
           rating: 4.9,
           publishDate: "1954-07-29",
@@ -292,6 +302,29 @@ const actions = {
 
   updateSortBy({ commit }: { commit: Commit }, sortBy: string) {
     commit('setSortBy', sortBy)
+  },
+
+  async fetchBookDetails({ commit, getters }: { commit: Commit, getters: any }, bookId: number) {
+    try {
+      commit('setLoading', true)
+      commit('setError', null)
+
+      // Simüle edilmiş API çağrısı
+      await new Promise(resolve => setTimeout(resolve, 500))
+      
+      const book = getters.getBookById(bookId)
+      if (!book) {
+        throw new Error('Kitap bulunamadı')
+      }
+
+      return book
+    } catch (error) {
+      console.error('Kitap detayları yüklenirken hata:', error)
+      commit('setError', 'Kitap detayları yüklenirken bir hata oluştu')
+      throw error
+    } finally {
+      commit('setLoading', false)
+    }
   }
 }
 

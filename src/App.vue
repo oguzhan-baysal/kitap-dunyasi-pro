@@ -2,7 +2,6 @@
 import { onMounted } from 'vue';
 import { useStore } from '@/store';
 import { RouterView } from 'vue-router';
-import Navbar from '@/components/layout/Navbar.vue';
 
 const store = useStore();
 
@@ -19,11 +18,142 @@ onMounted(async () => {
 </script>
 
 <template>
-  <Navbar />
-  <RouterView />
+  <div class="app-container">
+    <header class="header">
+      <nav class="nav-container">
+        <router-link to="/" class="logo">
+          Kitap Dünyası
+        </router-link>
+        
+        <div class="nav-links">
+          <router-link to="/" class="nav-link" active-class="active">
+            Ana Sayfa
+          </router-link>
+          <router-link to="/books" class="nav-link" active-class="active">
+            Kitaplar
+          </router-link>
+        </div>
+
+        <div class="auth-buttons">
+          <router-link to="/login" class="auth-button">
+            Giriş Yap
+          </router-link>
+          <router-link to="/register" class="auth-button register">
+            Kayıt Ol
+          </router-link>
+        </div>
+      </nav>
+    </header>
+
+    <main class="main-content">
+      <RouterView />
+    </main>
+  </div>
 </template>
 
 <style lang="scss">
+@import '@/assets/styles/_variables.scss';
+
+.app-container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.main-content {
+  flex: 1;
+}
+
+.header {
+  background: var(--color-background);
+  border-bottom: 1px solid var(--color-border);
+  padding: $spacing-4 0;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.nav-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 $spacing-4;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.logo {
+  font-size: $font-size-xl;
+  font-weight: $font-weight-bold;
+  color: var(--color-heading);
+  text-decoration: none;
+  
+  &:hover {
+    color: var(--color-primary);
+  }
+}
+
+.nav-links {
+  display: flex;
+  gap: $spacing-6;
+  
+  .nav-link {
+    color: var(--color-text);
+    text-decoration: none;
+    font-weight: $font-weight-medium;
+    transition: color 0.2s;
+    
+    &:hover,
+    &.active {
+      color: var(--color-primary);
+    }
+  }
+}
+
+.auth-buttons {
+  display: flex;
+  gap: $spacing-3;
+  
+  .auth-button {
+    padding: $spacing-2 $spacing-4;
+    border-radius: $border-radius;
+    text-decoration: none;
+    font-weight: $font-weight-medium;
+    transition: all 0.2s;
+    
+    &:not(.register) {
+      color: var(--color-text);
+      
+      &:hover {
+        color: var(--color-primary);
+      }
+    }
+    
+    &.register {
+      background: var(--color-primary);
+      color: white;
+      
+      &:hover {
+        background: var(--color-primary-dark);
+      }
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .nav-container {
+    flex-direction: column;
+    gap: $spacing-4;
+    text-align: center;
+  }
+  
+  .nav-links,
+  .auth-buttons {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
 :root {
   // Ana renkler
   --color-primary: #1976d2;
@@ -75,27 +205,8 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-#app {
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-}
-
-a {
-  text-decoration: none;
-  color: var(--color-link);
-  transition: 0.4s;
-  padding: 3px;
-}
-
-button {
+[role="link"] {
   cursor: pointer;
-  font-family: inherit;
-}
-
-@media (hover: hover) {
-  a:hover {
-    background-color: var(--color-background-soft);
-  }
+  display: inline-block;
 }
 </style>
