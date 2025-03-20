@@ -2,7 +2,7 @@
 import { ref, computed } from 'vue'
 import type { Book } from '@/types/book'
 import { useVuelidate } from '@vuelidate/core'
-import { required, minLength, numeric, decimal } from '@vuelidate/validators'
+import { required, minLength, numeric } from '@vuelidate/validators'
 
 const props = defineProps<{
   initialBook?: Book
@@ -13,22 +13,25 @@ const currentStep = ref(0)
 const selectedImage = ref<File | null>(null)
 const imagePreview = ref('')
 
-const book = ref<Partial<Book>>({
-  title: props.initialBook?.title || '',
-  author: props.initialBook?.author || '',
-  description: props.initialBook?.description || '',
-  price: props.initialBook?.price || 0,
-  rating: props.initialBook?.rating || 0,
-  coverImage: props.initialBook?.coverImage || '',
-  ...props.initialBook
+const book = ref({
+  title: '',
+  author: '',
+  description: '',
+  price: 0,
+  rating: 0,
+  coverImage: '',
+  category: '',
+  publishDate: new Date().toISOString(),
+  userId: 1,
+  isFavorite: false
 })
 
 const rules = computed(() => ({
   title: { required, minLength: minLength(3) },
   author: { required, minLength: minLength(3) },
+  price: { required },
   description: { required, minLength: minLength(10) },
-  price: { required, decimal },
-  rating: { required, numeric, min: 0, max: 5 }
+  rating: { required, numeric }
 }))
 
 const v$ = useVuelidate(rules, book)
@@ -37,9 +40,23 @@ const emit = defineEmits<{
   (e: 'submit', book: Book): void
 }>()
 
+const stepFields = {
+  0: ['title', 'author', 'price'],
+  1: ['description', 'rating'],
+  2: []
+}
+
+const validateStep = async (step: number) => {
+  const fieldsToValidate = stepFields[step as keyof typeof stepFields]
+  if (!fieldsToValidate.length) return true
+
+  await v$.value.$touch()
+  return !fieldsToValidate.some(field => v$.value[field].$error)
+}
+
 const nextStep = async () => {
-  const stepValidation = await v$.value.$validate()
-  if (!stepValidation) return
+  const isStepValid = await validateStep(currentStep.value)
+  if (!isStepValid) return
 
   if (currentStep.value < steps.length - 1) {
     currentStep.value++
@@ -116,7 +133,7 @@ const handleSubmit = async () => {
           <label for="price">Fiyat</label>
           <input
             id="price"
-            v-model="book.price"
+            v-model.number="book.price"
             type="number"
             step="0.01"
             :class="{ error: v$.price.$error }"
@@ -146,7 +163,7 @@ const handleSubmit = async () => {
           <label for="rating">Değerlendirme</label>
           <input
             id="rating"
-            v-model="book.rating"
+            v-model.number="book.rating"
             type="number"
             min="0"
             max="5"

@@ -7,7 +7,7 @@ import type { Book } from '@/types/book'
 const store = useStore()
 const router = useRouter()
 
-const userBooks = computed<Book[]>(() => store.getters['books/userBooks'] || [])
+const userBooks = computed<Book[]>(() => store.getters['books/userBooks'])
 
 const isLoading = ref(true)
 const errorMessage = ref('')
@@ -83,10 +83,6 @@ onMounted(loadBooks)
             {{ option.label }}
           </option>
         </select>
-
-        <router-link to="/books/new" class="add-button">
-          Yeni Kitap Ekle
-        </router-link>
       </div>
     </div>
 
@@ -182,21 +178,6 @@ onMounted(loadBooks)
   background: var(--color-card-bg);
   color: var(--color-text-primary);
   font-size: 0.875rem;
-}
-
-.add-button {
-  padding: 0.5rem 1rem;
-  background: var(--color-primary);
-  color: white;
-  border: none;
-  border-radius: 4px;
-  text-decoration: none;
-  font-size: 0.875rem;
-  transition: opacity 0.2s;
-
-  &:hover {
-    opacity: 0.9;
-  }
 }
 
 .loading {

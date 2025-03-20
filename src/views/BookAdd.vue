@@ -1,16 +1,23 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { useStore } from 'vuex'
 import BookForm from '@/components/books/BookForm.vue'
+import type { Book } from '@/types/book'
 
 const router = useRouter()
+const store = useStore()
 const isSubmitting = ref(false)
 
-const handleSubmit = async () => {
+const handleSubmit = async (bookData: Book) => {
+  if (isSubmitting.value) return
+  
   isSubmitting.value = true
   try {
-    // Kitap ekleme işlemi
+    await store.dispatch('books/addBook', bookData)
     router.push('/profile')
+  } catch (err) {
+    console.error('Kitap eklenirken hata:', err)
   } finally {
     isSubmitting.value = false
   }
@@ -20,7 +27,7 @@ const handleSubmit = async () => {
 <template>
   <div class="book-add-view">
     <h1>Yeni Kitap Ekle</h1>
-    <BookForm />
+    <BookForm @submit="handleSubmit" />
   </div>
 </template>
 

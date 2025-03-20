@@ -3,7 +3,6 @@ import { RouterLink } from 'vue-router'
 import { useStore } from 'vuex'
 import { computed } from 'vue'
 import ThemeToggle from '@/components/ui/ThemeToggle.vue'
-import CurrencySelector from '@/components/ui/CurrencySelector.vue'
 
 const store = useStore()
 const isLoggedIn = computed(() => store.getters['auth/isLoggedIn'])
@@ -19,7 +18,6 @@ const logout = () => {
     <nav class="nav">
       <RouterLink to="/" class="logo">Kitap Dünyası Pro</RouterLink>
       <div class="nav-right">
-        <CurrencySelector />
         <ThemeToggle />
         <template v-if="isLoggedIn">
           <RouterLink to="/profile" class="user-name">{{ user?.name }}</RouterLink>

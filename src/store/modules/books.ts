@@ -41,6 +41,7 @@ export interface BooksState {
 interface BooksActionContext {
   commit: Commit
   state: BooksState
+  rootState: RootState
   dispatch: (action: string) => Promise<void>
 }
 
@@ -205,11 +206,11 @@ const mutations = {
 }
 
 const actions = {
-  async initialize({ dispatch }: { dispatch: any }) {
+  async initialize({ dispatch }: BooksActionContext) {
     await dispatch('fetchBooks')
   },
 
-  async fetchBooks({ commit, state }: { commit: Commit, state: BooksState }) {
+  async fetchBooks({ commit, state, rootState }: BooksActionContext) {
     try {
       commit('setLoading', true)
       commit('setError', null)
@@ -228,7 +229,7 @@ const actions = {
             rating: (Math.floor(Math.random() * 10) + 35) / 10,
             publishDate: new Date().toISOString(),
             category: categories[Math.floor(Math.random() * categories.length)],
-            userId: 1,
+            userId: 999, // Sabit bir ID kullanıyoruz (sistem kitapları için)
             isFavorite: false
           }))
           resolve(mockBooks)
@@ -250,31 +251,24 @@ const actions = {
     }
   },
 
-  async fetchUserBooks({ commit }: { commit: Commit }) {
-    commit('setLoading', true)
-    commit('setError', null)
-
+  async fetchUserBooks({ commit, rootState, state }: BooksActionContext) {
     try {
-      // API çağrısı simülasyonu
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      
-      const mockUserBooks: Book[] = [
-        {
-          id: 1,
-          title: 'Vue.js 3 Rehberi',
-          author: 'John Doe',
-          description: 'Vue.js 3 hakkında kapsamlı bir rehber',
-          price: 49.99,
-          coverImage: 'https://picsum.photos/200/300',
-          category: 'Programlama',
-          userId: 1,
-          isFavorite: false
-        }
-      ]
+      commit('setLoading', true)
+      commit('setError', null)
 
-      commit('setUserBooks', mockUserBooks)
+      // Kullanıcı giriş yapmış mı kontrol et
+      const userId = rootState.auth.user?.id
+      if (!userId) {
+        commit('setUserBooks', [])
+        return
+      }
+
+      // Sadece kullanıcının kendi kitaplarını filtrele
+      const userBooks = state.books.filter(book => book.userId === userId)
+      commit('setUserBooks', userBooks)
+      commit('setBooks', userBooks) // Kitaplarım sayfasında sadece kullanıcının kitaplarını göster
     } catch (error) {
-      commit('setError', 'Kullanıcı kitapları yüklenirken bir hata oluştu')
+      commit('setError', 'Kitaplarınız yüklenirken bir hata oluştu')
     } finally {
       commit('setLoading', false)
     }
@@ -303,29 +297,25 @@ const actions = {
     }
   },
 
-  async addBook({ commit }: { commit: Commit }, bookData: Partial<Book>) {
-    commit('setLoading', true)
-    commit('setError', null)
-
+  async addBook({ commit, rootState }: BooksActionContext, bookData: Partial<Book>) {
     try {
-      // API çağrısı simülasyonu
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      
-      const newBook: Book = {
-        id: Date.now(),
-        title: '',
-        author: '',
-        description: '',
-        price: 0,
-        coverImage: '',
-        category: '',
-        userId: 1,
-        isFavorite: false,
-        ...bookData
-      }
+      commit('setLoading', true)
+      commit('setError', null)
+
+      // Simüle edilmiş API çağrısı
+      const newBook = await new Promise<Book>((resolve) => {
+        setTimeout(() => {
+          const book: Book = {
+            id: Math.floor(Math.random() * 10000) + 1,
+            userId: rootState.auth.user?.id || 1,
+            isFavorite: false,
+            ...bookData
+          } as Book
+          resolve(book)
+        }, 500)
+      })
 
       commit('addBook', newBook)
-      return newBook
     } catch (error) {
       commit('setError', 'Kitap eklenirken bir hata oluştu')
       throw error

@@ -33,10 +33,12 @@ const handleSubmit = async (bookData: Book) => {
         id: parseInt(route.params.id as string),
         ...bookData
       })
-      router.push('/books')
+      await store.dispatch('books/fetchUserBooks')
+      router.push('/profile')
     } else {
       await store.dispatch('books/addBook', bookData)
-      router.push('/books')
+      await store.dispatch('books/fetchUserBooks')
+      router.push('/profile')
     }
   } catch (err) {
     error.value = 'Kitap kaydedilirken bir hata oluştu.'

@@ -1,5 +1,12 @@
 export interface RootState {
   version: string
+  auth: {
+    user: {
+      id: number
+      email: string
+      name: string
+    } | null
+  }
 }
 
 export interface AuthState {
