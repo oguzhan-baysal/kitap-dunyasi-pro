@@ -86,14 +86,14 @@ const handleSubmit = async () => {
   max-width: 400px;
   margin: 2rem auto;
   padding: 2rem;
-  background: var(--color-bg-primary);
+  background: var(--color-background);
   border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   
   h2 {
     text-align: center;
     margin-bottom: 2rem;
-    color: var(--color-text-primary);
+    color: var(--color-heading);
   }
 }
 
@@ -103,7 +103,7 @@ const handleSubmit = async () => {
   label {
     display: block;
     margin-bottom: 0.5rem;
-    color: var(--color-text-primary);
+    color: var(--color-text);
   }
   
   input {
@@ -112,11 +112,17 @@ const handleSubmit = async () => {
     border: 1px solid var(--color-border);
     border-radius: 4px;
     font-size: 1rem;
+    background: var(--color-background);
+    color: var(--color-text);
     
     &:focus {
       outline: none;
       border-color: var(--color-primary);
       box-shadow: 0 0 0 2px rgba(25, 118, 210, 0.1);
+    }
+
+    &::placeholder {
+      color: var(--color-text-light);
     }
   }
 }
@@ -172,7 +178,7 @@ const handleSubmit = async () => {
   margin-top: 1.5rem;
   text-align: center;
   font-size: 0.9rem;
-  color: var(--color-text-secondary);
+  color: var(--color-text-light);
   
   a {
     color: var(--color-primary);

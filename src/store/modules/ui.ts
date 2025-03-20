@@ -26,7 +26,7 @@ const mutations = {
 }
 
 const actions = {
-  initTheme({ commit }: { commit: Commit }) {
+  initializeTheme({ commit }: { commit: Commit }) {
     // Sayfa yüklendiğinde localStorage'dan temayı al
     const savedTheme = localStorage.getItem('theme') as 'light' | 'dark'
     if (savedTheme) {

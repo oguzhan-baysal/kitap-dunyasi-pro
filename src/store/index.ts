@@ -9,13 +9,7 @@ import type { RootState } from './types'
 
 const store = createStore<RootState>({
   state: () => ({
-    version: '1.0.0',
-    books: (books.state as () => any)(),
-    auth: (auth.state as () => any)(),
-    currency: (currency.state as () => any)(),
-    favorites: (favorites.state as () => any)(),
-    comments: (comments.state as () => any)(),
-    ui: (ui.state as () => any)()
+    version: '1.0.0'
   }),
   modules: {
     auth,

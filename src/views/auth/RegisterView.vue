@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import { useStore } from '@/store'
+import { useStore } from 'vuex'
 import { useRouter } from 'vue-router'
 
-const store = useStore()
 const router = useRouter()
+const store = useStore()
 
 const name = ref('')
 const email = ref('')
@@ -13,7 +13,13 @@ const confirmPassword = ref('')
 const error = ref('')
 const loading = ref(false)
 
-const handleSubmit = async () => {
+const handleSubmit = async (e?: Event) => {
+  if (e) {
+    e.preventDefault()
+  }
+  
+  console.log('Form submit başladı')
+
   if (!name.value || !email.value || !password.value || !confirmPassword.value) {
     error.value = 'Lütfen tüm alanları doldurun'
     return
@@ -28,13 +34,25 @@ const handleSubmit = async () => {
   error.value = ''
 
   try {
+    console.log('Register isteği gönderiliyor:', { name: name.value, email: email.value })
     await store.dispatch('auth/register', {
       name: name.value,
       email: email.value,
       password: password.value
     })
-    router.push('/')
+    
+    // Kayıt başarılı olduğunda
+    const isLoggedIn = store.getters['auth/isLoggedIn']
+    console.log('Kimlik doğrulama durumu:', isLoggedIn)
+    
+    if (isLoggedIn) {
+      console.log('Yönlendirme yapılıyor...')
+      await router.push('/')
+    } else {
+      error.value = 'Kayıt başarısız oldu'
+    }
   } catch (err) {
+    console.error('Kayıt hatası:', err)
     error.value = err instanceof Error ? err.message : 'Kayıt olurken bir hata oluştu'
   } finally {
     loading.value = false
@@ -47,7 +65,7 @@ const handleSubmit = async () => {
     <div class="register-container">
       <h1>Kayıt Ol</h1>
       
-      <form @submit.prevent="handleSubmit" class="register-form">
+      <form @submit.prevent="handleSubmit" method="post" class="register-form">
         <div class="form-group">
           <label for="name">Ad Soyad</label>
           <input

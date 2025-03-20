@@ -1,23 +1,10 @@
 <script setup lang="ts">
-import { onMounted, computed } from 'vue';
+import { onMounted } from 'vue';
 import { useStore } from '@/store';
-import { useRouter } from 'vue-router';
 import { RouterView } from 'vue-router';
+import Header from '@/components/layout/Header.vue';
 
 const store = useStore();
-const router = useRouter();
-
-const isAuthenticated = computed(() => store.getters['auth/isAuthenticated']);
-const currentUser = computed(() => store.getters['auth/currentUser']);
-
-const handleLogout = async () => {
-  try {
-    await store.dispatch('auth/logout');
-    router.push('/login');
-  } catch (error) {
-    console.error('Çıkış yapılırken hata:', error);
-  }
-};
 
 onMounted(async () => {
   // Auth durumunu kontrol et
@@ -29,56 +16,15 @@ onMounted(async () => {
   // Döviz kurlarını yükle
   await store.dispatch('currency/fetchRates');
   store.dispatch('currency/startAutoUpdate');
+  
+  // Tema durumunu kontrol et
+  store.dispatch('ui/initializeTheme');
 });
 </script>
 
 <template>
   <div class="app-container">
-    <header class="header">
-      <nav class="nav-container">
-        <router-link to="/" class="logo">
-          Kitap Dünyası
-        </router-link>
-        
-        <div class="nav-links">
-          <router-link to="/" class="nav-link" active-class="active">
-            Ana Sayfa
-          </router-link>
-          <router-link to="/books" class="nav-link" active-class="active">
-            Kitaplar
-          </router-link>
-          <router-link 
-            v-if="isAuthenticated" 
-            to="/favorites" 
-            class="nav-link" 
-            active-class="active"
-          >
-            Favorilerim
-          </router-link>
-        </div>
-
-        <!-- Giriş yapmamış kullanıcılar için -->
-        <div v-if="!isAuthenticated" class="auth-buttons">
-          <router-link to="/login" class="auth-button">
-            Giriş Yap
-          </router-link>
-          <router-link to="/register" class="auth-button register">
-            Kayıt Ol
-          </router-link>
-        </div>
-
-        <!-- Giriş yapmış kullanıcılar için -->
-        <div v-else class="user-menu">
-          <router-link to="/profile" class="user-button">
-            {{ currentUser?.name || 'Profilim' }}
-          </router-link>
-          <button @click="handleLogout" class="logout-button">
-            Çıkış Yap
-          </button>
-        </div>
-      </nav>
-    </header>
-
+    <Header />
     <main class="main-content">
       <RouterView />
     </main>
@@ -96,133 +42,7 @@ onMounted(async () => {
 
 .main-content {
   flex: 1;
-}
-
-.header {
-  background: var(--color-background);
-  border-bottom: 1px solid var(--color-border);
-  padding: $spacing-4 0;
-  position: sticky;
-  top: 0;
-  z-index: 100;
-}
-
-.nav-container {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 $spacing-4;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.logo {
-  font-size: $font-size-xl;
-  font-weight: $font-weight-bold;
-  color: var(--color-heading);
-  text-decoration: none;
-  
-  &:hover {
-    color: var(--color-primary);
-  }
-}
-
-.nav-links {
-  display: flex;
-  gap: $spacing-6;
-  
-  .nav-link {
-    color: var(--color-text);
-    text-decoration: none;
-    font-weight: $font-weight-medium;
-    transition: color 0.2s;
-    
-    &:hover,
-    &.active {
-      color: var(--color-primary);
-    }
-  }
-}
-
-.auth-buttons {
-  display: flex;
-  gap: $spacing-3;
-  
-  .auth-button {
-    padding: $spacing-2 $spacing-4;
-    border-radius: $border-radius;
-    text-decoration: none;
-    font-weight: $font-weight-medium;
-    transition: all 0.2s;
-    
-    &:not(.register) {
-      color: var(--color-text);
-      
-      &:hover {
-        color: var(--color-primary);
-      }
-    }
-    
-    &.register {
-      background: var(--color-primary);
-      color: white;
-      
-      &:hover {
-        background: var(--color-primary-dark);
-      }
-    }
-  }
-}
-
-.user-menu {
-  display: flex;
-  gap: $spacing-3;
-  align-items: center;
-
-  .user-button {
-    color: var(--color-text);
-    text-decoration: none;
-    font-weight: $font-weight-medium;
-    padding: $spacing-2 $spacing-4;
-    border-radius: $border-radius;
-    transition: all 0.2s;
-
-    &:hover {
-      color: var(--color-primary);
-      background: var(--color-background-soft);
-    }
-  }
-
-  .logout-button {
-    padding: $spacing-2 $spacing-4;
-    border-radius: $border-radius;
-    border: 1px solid var(--color-border);
-    background: transparent;
-    color: var(--color-text);
-    font-weight: $font-weight-medium;
-    cursor: pointer;
-    transition: all 0.2s;
-
-    &:hover {
-      border-color: var(--color-error);
-      color: var(--color-error);
-      background: var(--color-background-soft);
-    }
-  }
-}
-
-@media (max-width: 768px) {
-  .nav-container {
-    flex-direction: column;
-    gap: $spacing-4;
-    text-align: center;
-  }
-  
-  .nav-links,
-  .auth-buttons {
-    width: 100%;
-    justify-content: center;
-  }
+  padding: $spacing-4;
 }
 
 :root {
@@ -250,7 +70,37 @@ onMounted(async () => {
   // Kenarlık renkleri
   --color-border: #e2e8f0;
   --color-border-hover: #cbd5e1;
-  --color-divider: #e2e8f0;
+}
+
+:root.dark {
+  // Ana renkler
+  --color-primary: #90caf9;
+  --color-primary-dark: #42a5f5;
+  --color-primary-light: #e3f2fd;
+  --color-secondary: #ce93d8;
+  --color-success: #66bb6a;
+  --color-error: #f44336;
+  --color-warning: #ffa726;
+  --color-info: #29b6f6;
+
+  // Metin renkleri
+  --color-text: #e2e8f0;
+  --color-text-light: #94a3b8;
+  --color-heading: #f8fafc;
+  --color-link: var(--color-primary);
+
+  // Arkaplan renkleri
+  --color-background: #0f172a;
+  --color-background-soft: #1e293b;
+  --color-background-mute: #334155;
+
+  // Kenarlık renkleri
+  --color-border: #334155;
+  --color-border-hover: #475569;
+}
+
+* {
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
 }
 
 *,

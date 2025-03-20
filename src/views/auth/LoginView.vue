@@ -1,17 +1,23 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import { useStore } from '@/store'
+import { useStore } from 'vuex'
 import { useRouter } from 'vue-router'
 
-const store = useStore()
 const router = useRouter()
+const store = useStore()
 
 const email = ref('')
 const password = ref('')
 const error = ref('')
 const loading = ref(false)
 
-const handleSubmit = async () => {
+const handleSubmit = async (e?: Event) => {
+  if (e) {
+    e.preventDefault()
+  }
+  
+  console.log('Form submit başladı')
+
   if (!email.value || !password.value) {
     error.value = 'Lütfen tüm alanları doldurun'
     return
@@ -21,12 +27,24 @@ const handleSubmit = async () => {
   error.value = ''
 
   try {
+    console.log('Login isteği gönderiliyor:', { email: email.value })
     await store.dispatch('auth/login', {
       email: email.value,
       password: password.value
     })
-    router.push('/')
+    
+    // Login başarılı olduğunda
+    const isLoggedIn = store.getters['auth/isLoggedIn']
+    console.log('Kimlik doğrulama durumu:', isLoggedIn)
+    
+    if (isLoggedIn) {
+      console.log('Yönlendirme yapılıyor...')
+      await router.push('/')
+    } else {
+      error.value = 'Giriş başarısız oldu'
+    }
   } catch (err) {
+    console.error('Login hatası:', err)
     error.value = err instanceof Error ? err.message : 'Giriş yapılırken bir hata oluştu'
   } finally {
     loading.value = false
@@ -70,6 +88,7 @@ const handleSubmit = async () => {
           type="submit" 
           class="submit-button"
           :disabled="loading"
+          @click="handleSubmit"
         >
           {{ loading ? 'Giriş yapılıyor...' : 'Giriş Yap' }}
         </button>

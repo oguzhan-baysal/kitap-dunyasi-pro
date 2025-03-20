@@ -1,10 +1,5 @@
 export interface RootState {
   version: string
-  books: BooksState
-  currency: CurrencyState
-  favorites: FavoritesState
-  auth: AuthState
-  ui: UIState
 }
 
 export interface AuthState {

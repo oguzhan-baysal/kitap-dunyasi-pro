@@ -13,7 +13,7 @@ import RegisterForm from '@/components/auth/RegisterForm.vue'
   display: flex;
   justify-content: center;
   align-items: center;
-  min-height: 100vh;
+  min-height: calc(100vh - 80px);
   padding: 2rem;
   background-color: var(--color-background);
 }

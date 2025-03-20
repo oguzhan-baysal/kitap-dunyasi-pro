@@ -77,4 +77,64 @@ $shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.
 $error: #dc2626;
 
 // Transitions
-$transition-base: all 0.2s ease-in-out; 
+$transition-base: all 0.2s ease-in-out;
+
+// Tema değişkenleri
+:root {
+  // Light tema (varsayılan)
+  --color-primary: #1976d2;
+  --color-primary-dark: #1565c0;
+  --color-primary-light: #42a5f5;
+  --color-secondary: #9c27b0;
+  --color-success: #2e7d32;
+  --color-error: #d32f2f;
+  --color-warning: #ed6c02;
+  --color-info: #0288d1;
+
+  // Metin renkleri
+  --color-text: #213547;
+  --color-text-light: #4a5568;
+  --color-heading: #1a202c;
+  --color-link: var(--color-primary);
+
+  // Arkaplan renkleri
+  --color-background: #ffffff;
+  --color-background-soft: #f8fafc;
+  --color-background-mute: #f1f5f9;
+
+  // Kenarlık renkleri
+  --color-border: #e2e8f0;
+  --color-border-hover: #cbd5e1;
+}
+
+// Dark tema
+:root.dark {
+  --color-primary: #90caf9;
+  --color-primary-dark: #42a5f5;
+  --color-primary-light: #e3f2fd;
+  --color-secondary: #ce93d8;
+  --color-success: #66bb6a;
+  --color-error: #f44336;
+  --color-warning: #ffa726;
+  --color-info: #29b6f6;
+
+  // Metin renkleri
+  --color-text: #e2e8f0;
+  --color-text-light: #94a3b8;
+  --color-heading: #f8fafc;
+  --color-link: var(--color-primary);
+
+  // Arkaplan renkleri
+  --color-background: #0f172a;
+  --color-background-soft: #1e293b;
+  --color-background-mute: #334155;
+
+  // Kenarlık renkleri
+  --color-border: #334155;
+  --color-border-hover: #475569;
+}
+
+// Geçiş efektleri
+* {
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+} 

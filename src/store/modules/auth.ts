@@ -109,6 +109,7 @@ const state = (): AuthState => ({
 
 const getters = {
   isAuthenticated: (state: AuthState) => !!state.token,
+  isLoggedIn: (state: AuthState) => !!state.token,
   user: (state: AuthState) => state.user,
   loading: (state: AuthState) => state.loading,
   error: (state: AuthState) => state.error
@@ -148,6 +149,8 @@ const actions = {
     commit('setError', null)
     
     try {
+      console.log('Login action başladı:', credentials.email)
+      
       // API çağrısı simülasyonu
       await new Promise(resolve => setTimeout(resolve, 1000))
       
@@ -163,11 +166,15 @@ const actions = {
         expiresAt: Date.now() + TOKEN_DURATION.ACCESS
       }
 
+      console.log('Login başarılı, kullanıcı bilgileri kaydediliyor...')
       commit('setUser', mockUser)
       commit('setToken', tokenData)
-      router.push('/profile')
+      
+      return { success: true }
     } catch (error) {
+      console.error('Login action hatası:', error)
       commit('setError', 'Giriş başarısız oldu')
+      return { success: false, error }
     } finally {
       commit('setLoading', false)
     }
