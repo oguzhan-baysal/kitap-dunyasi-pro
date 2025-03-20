@@ -1,17 +1,45 @@
 // @ts-ignore
 import { Module, Commit } from 'vuex'
-import { RootState, BooksState, Book } from '../types'
+import { RootState } from '../types'
+import type { Book } from '@/types/book'
+
+interface BooksState {
+  books: Book[]
+  currentPage: number
+  itemsPerPage: number
+  hasMore: boolean
+  loading: boolean
+  error: string | null
+  filters: {
+    category: string | null
+    minPrice: number | null
+    maxPrice: number | null
+    rating: number | null
+  }
+  sort: {
+    field: string
+    order: 'asc' | 'desc'
+  }
+}
+
+interface BooksActionContext {
+  commit: Commit
+  state: BooksState
+  dispatch: (action: string) => Promise<void>
+}
 
 const state = (): BooksState => ({
   books: [],
+  currentPage: 1,
+  itemsPerPage: 12,
+  hasMore: true,
   loading: false,
   error: null,
-  selectedBook: null,
   filters: {
-    category: '',
-    minPrice: 0,
-    maxPrice: 1000,
-    searchQuery: ''
+    category: null,
+    minPrice: null,
+    maxPrice: null,
+    rating: null
   },
   sort: {
     field: 'title',
@@ -23,54 +51,54 @@ const getters = {
   getBooks: (state: BooksState): Book[] => state.books,
   getLoading: (state: BooksState): boolean => state.loading,
   getError: (state: BooksState): string | null => state.error,
-  getSelectedBook: (state: BooksState): Book | null => state.selectedBook,
   getFilters: (state: BooksState) => state.filters,
   getSort: (state: BooksState) => state.sort,
+  allBooks: (state: BooksState): Book[] => state.books,
+  isLoading: (state: BooksState): boolean => state.loading,
+  hasError: (state: BooksState): boolean => !!state.error,
+  errorMessage: (state: BooksState): string | null => state.error,
+  hasMoreBooks: (state: BooksState): boolean => state.hasMore,
   
   featuredBooks: (state: BooksState): Book[] => {
     return state.books.filter(book => book.rating >= 4.0).slice(0, 5)
   },
 
-  getFilteredBooks: (state: BooksState): Book[] => {
-    return state.books.filter(book => {
-      // Kategori filtresi
-      if (state.filters.category && book.category !== state.filters.category) {
-        return false
-      }
+  getFilteredAndSortedBooks: (state: BooksState): Book[] => {
+    let filteredBooks = [...state.books]
 
-      // Fiyat aralığı filtresi
-      if (book.price < state.filters.minPrice || 
-          book.price > state.filters.maxPrice) {
-        return false
-      }
+    // Filtreleme işlemleri
+    if (state.filters.category) {
+      filteredBooks = filteredBooks.filter(book => book.category === state.filters.category)
+    }
 
-      // Arama filtresi
-      if (state.filters.searchQuery) {
-        const query = state.filters.searchQuery.toLowerCase()
-        const searchIn = [
-          book.title,
-          book.author,
-          book.description,
-          book.category
-        ].map(text => text.toLowerCase())
+    if (state.filters.minPrice !== null) {
+      filteredBooks = filteredBooks.filter(book => book.price >= state.filters.minPrice!)
+    }
 
-        return searchIn.some(text => text.includes(query))
-      }
+    if (state.filters.maxPrice !== null) {
+      filteredBooks = filteredBooks.filter(book => book.price <= state.filters.maxPrice!)
+    }
 
-      return true
-    }).sort((a, b) => {
-      const field = state.sort.field as keyof Book
+    // Sıralama işlemi
+    filteredBooks.sort((a, b) => {
+      const field = state.sort.field
       const order = state.sort.order === 'asc' ? 1 : -1
-      const aValue = a[field]
-      const bValue = b[field]
-      
-      if (typeof aValue === 'string' && typeof bValue === 'string') {
-        return aValue.localeCompare(bValue) * order
+
+      switch (field) {
+        case 'title':
+          return a.title.localeCompare(b.title) * order
+        case 'price':
+          return (a.price - b.price) * order
+        case 'rating':
+          return (a.rating - b.rating) * order
+        case 'publishDate':
+          return (new Date(a.publishDate).getTime() - new Date(b.publishDate).getTime()) * order
+        default:
+          return 0
       }
-      
-      if (aValue === undefined || bValue === undefined) return 0
-      return aValue > bValue ? order : -order
     })
+
+    return filteredBooks
   }
 }
 
@@ -84,14 +112,38 @@ const mutations = {
   SET_ERROR(state: BooksState, error: string | null) {
     state.error = error
   },
-  SET_SELECTED_BOOK(state: BooksState, book: Book | null) {
-    state.selectedBook = book
-  },
-  UPDATE_FILTERS(state: BooksState, filters: Partial<BooksState['filters']>) {
-    state.filters = { ...state.filters, ...filters }
+  UPDATE_FILTERS(state: BooksState, filters: BooksState['filters']) {
+    state.filters = filters
   },
   UPDATE_SORT(state: BooksState, sort: BooksState['sort']) {
     state.sort = sort
+  },
+  setBooks(state: BooksState, books: Book[]) {
+    state.books = books
+  },
+  appendBooks(state: BooksState, books: Book[]) {
+    state.books.push(...books)
+  },
+  setCurrentPage(state: BooksState, page: number) {
+    state.currentPage = page
+  },
+  setHasMore(state: BooksState, hasMore: boolean) {
+    state.hasMore = hasMore
+  },
+  setLoading(state: BooksState, loading: boolean) {
+    state.loading = loading
+  },
+  setError(state: BooksState, error: string | null) {
+    state.error = error
+  },
+  toggleFavorite(state: BooksState, bookId: number) {
+    const book = state.books.find(b => b.id === bookId)
+    if (book) {
+      book.isFavorite = !book.isFavorite
+    }
+  },
+  setSortBy(state: BooksState, sortBy: string) {
+    state.sort.field = sortBy
   }
 }
 
@@ -105,83 +157,63 @@ const actions = {
       const mockBooks: Book[] = [
         {
           id: 1,
-          title: 'Suç ve Ceza',
-          author: 'Fyodor Dostoyevski',
-          description: 'Rus edebiyatının en önemli eserlerinden biri. Raskolnikov\'un psikolojik gerilimi...',
-          price: 49.90,
+          title: "1984",
+          author: "George Orwell",
+          description: "Distopik bir gelecekte geçen, gözetim toplumunu eleştiren başyapıt...",
+          price: 45.99,
           rating: 4.8,
-          category: 'Roman',
-          imageUrl: '/placeholder.svg'
+          publishDate: "1949-06-08",
+          coverImage: "/images/books/1984.jpg",
+          category: "Roman",
+          isFavorite: false
         },
         {
           id: 2,
-          title: '1984',
-          author: 'George Orwell',
-          description: 'Distopik bir gelecekte geçen, gözetim toplumunu eleştiren başyapıt...',
-          price: 39.90,
-          rating: 4.7,
-          category: 'Roman',
-          imageUrl: '/placeholder.svg'
+          title: "Atomik Alışkanlıklar",
+          author: "James Clear",
+          description: "Küçük değişikliklerle büyük sonuçlar elde etmenin kanıtlanmış yolu...",
+          price: 52.99,
+          rating: 4.9,
+          publishDate: "2018-10-16",
+          coverImage: "/images/books/atomic-habits.jpg",
+          category: "Kişisel Gelişim",
+          isFavorite: false
         },
         {
           id: 3,
-          title: 'Dönüşüm',
-          author: 'Franz Kafka',
-          description: 'Bir sabah Gregor Samsa kendini dev bir böceğe dönüşmüş olarak bulur...',
-          price: 29.90,
-          rating: 4.6,
-          category: 'Roman',
-          imageUrl: '/placeholder.svg'
+          title: "Suç ve Ceza",
+          author: "Fyodor Dostoyevski",
+          description: "İnsanın karanlık yönlerini ve vicdan kavramını sorgulayan başyapıt...",
+          price: 49.99,
+          rating: 4.7,
+          publishDate: "1866-01-01",
+          coverImage: "/images/books/crime-and-punishment.jpg",
+          category: "Roman",
+          isFavorite: false
         },
         {
           id: 4,
-          title: 'Sefiller',
-          author: 'Victor Hugo',
-          description: 'Jean Valjean\'ın hikayesi üzerinden adalet ve merhamet kavramlarını sorgulayan başyapıt...',
-          price: 69.90,
-          rating: 4.9,
-          category: 'Roman',
-          imageUrl: '/placeholder.svg'
+          title: "Dune",
+          author: "Frank Herbert",
+          description: "Bilim kurgu edebiyatının en önemli eserlerinden biri...",
+          price: 65.99,
+          rating: 4.6,
+          publishDate: "1965-08-01",
+          coverImage: "/images/books/dune.jpg",
+          category: "Bilim Kurgu",
+          isFavorite: false
         },
         {
           id: 5,
-          title: 'Küçük Prens',
-          author: 'Antoine de Saint-Exupéry',
-          description: 'Çocuklar için yazılmış gibi görünen ama aslında yetişkinlere çok şey anlatan bir klasik...',
-          price: 24.90,
-          rating: 4.8,
-          category: 'Çocuk',
-          imageUrl: '/placeholder.svg'
-        },
-        {
-          id: 6,
-          title: 'Sapiens',
-          author: 'Yuval Noah Harari',
-          description: 'İnsanlığın tarihsel yolculuğunu anlatan çığır açıcı bir eser...',
-          price: 59.90,
-          rating: 4.7,
-          category: 'Bilim',
-          imageUrl: '/placeholder.svg'
-        },
-        {
-          id: 7,
-          title: 'Atomik Alışkanlıklar',
-          author: 'James Clear',
-          description: 'Küçük değişikliklerle büyük sonuçlar elde etmenin bilimsel yolu...',
-          price: 44.90,
-          rating: 4.6,
-          category: 'Kişisel Gelişim',
-          imageUrl: '/placeholder.svg'
-        },
-        {
-          id: 8,
-          title: 'Nutuk',
-          author: 'Mustafa Kemal Atatürk',
-          description: 'Türkiye Cumhuriyeti\'nin kuruluş destanı...',
-          price: 34.90,
-          rating: 5.0,
-          category: 'Tarih',
-          imageUrl: '/placeholder.svg'
+          title: "Yüzüklerin Efendisi",
+          author: "J.R.R. Tolkien",
+          description: "Orta Dünya'da geçen epik fantastik kurgu serisi...",
+          price: 89.99,
+          rating: 4.9,
+          publishDate: "1954-07-29",
+          coverImage: "/images/books/lord-of-the-rings.jpg",
+          category: "Fantastik",
+          isFavorite: false
         }
       ]
 
@@ -194,101 +226,45 @@ const actions = {
     }
   },
 
-  async fetchBooks({ commit }: { commit: Commit }) {
+  async fetchBooks({ commit, state }: BooksActionContext) {
     try {
-      commit('SET_LOADING', true)
-      commit('SET_ERROR', null)
+      commit('setLoading', true)
+      commit('setError', null)
 
-      // Mock kitap verisi - initialize ile aynı veri
-      const mockBooks: Book[] = [
-        {
-          id: 1,
-          title: 'Suç ve Ceza',
-          author: 'Fyodor Dostoyevski',
-          description: 'Rus edebiyatının en önemli eserlerinden biri. Raskolnikov\'un psikolojik gerilimi...',
-          price: 49.90,
-          rating: 4.8,
-          category: 'Roman',
-          imageUrl: '/placeholder.svg'
-        },
-        {
-          id: 2,
-          title: '1984',
-          author: 'George Orwell',
-          description: 'Distopik bir gelecekte geçen, gözetim toplumunu eleştiren başyapıt...',
-          price: 39.90,
-          rating: 4.7,
-          category: 'Roman',
-          imageUrl: '/placeholder.svg'
-        },
-        {
-          id: 3,
-          title: 'Dönüşüm',
-          author: 'Franz Kafka',
-          description: 'Bir sabah Gregor Samsa kendini dev bir böceğe dönüşmüş olarak bulur...',
-          price: 29.90,
-          rating: 4.6,
-          category: 'Roman',
-          imageUrl: '/placeholder.svg'
-        },
-        {
-          id: 4,
-          title: 'Sefiller',
-          author: 'Victor Hugo',
-          description: 'Jean Valjean\'ın hikayesi üzerinden adalet ve merhamet kavramlarını sorgulayan başyapıt...',
-          price: 69.90,
-          rating: 4.9,
-          category: 'Roman',
-          imageUrl: '/placeholder.svg'
-        },
-        {
-          id: 5,
-          title: 'Küçük Prens',
-          author: 'Antoine de Saint-Exupéry',
-          description: 'Çocuklar için yazılmış gibi görünen ama aslında yetişkinlere çok şey anlatan bir klasik...',
-          price: 24.90,
-          rating: 4.8,
-          category: 'Çocuk',
-          imageUrl: '/placeholder.svg'
-        },
-        {
-          id: 6,
-          title: 'Sapiens',
-          author: 'Yuval Noah Harari',
-          description: 'İnsanlığın tarihsel yolculuğunu anlatan çığır açıcı bir eser...',
-          price: 59.90,
-          rating: 4.7,
-          category: 'Bilim',
-          imageUrl: '/placeholder.svg'
-        },
-        {
-          id: 7,
-          title: 'Atomik Alışkanlıklar',
-          author: 'James Clear',
-          description: 'Küçük değişikliklerle büyük sonuçlar elde etmenin bilimsel yolu...',
-          price: 44.90,
-          rating: 4.6,
-          category: 'Kişisel Gelişim',
-          imageUrl: '/placeholder.svg'
-        },
-        {
-          id: 8,
-          title: 'Nutuk',
-          author: 'Mustafa Kemal Atatürk',
-          description: 'Türkiye Cumhuriyeti\'nin kuruluş destanı...',
-          price: 34.90,
-          rating: 5.0,
-          category: 'Tarih',
-          imageUrl: '/placeholder.svg'
-        }
-      ]
+      // Simüle edilmiş API çağrısı
+      const response = await new Promise<Book[]>((resolve) => {
+        setTimeout(() => {
+          const categories = ['Roman', 'Bilim Kurgu', 'Fantastik', 'Kişisel Gelişim', 'Tarih']
+          const mockBooks: Book[] = Array.from({ length: state.itemsPerPage }, (_, index) => ({
+            id: state.books.length + index + 1,
+            title: `Kitap ${state.books.length + index + 1}`,
+            author: `Yazar ${state.books.length + index + 1}`,
+            description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',
+            price: Math.floor(Math.random() * 200) + 20,
+            coverImage: `/images/books/placeholder.jpg`,
+            rating: (Math.floor(Math.random() * 10) + 35) / 10, // 3.5 ile 4.5 arası
+            publishDate: new Date().toISOString(),
+            category: categories[Math.floor(Math.random() * categories.length)],
+            isFavorite: false
+          }))
+          resolve(mockBooks)
+        }, 1000)
+      })
 
-      commit('SET_BOOKS', mockBooks)
+      if (state.currentPage === 1) {
+        commit('setBooks', response)
+      } else {
+        commit('appendBooks', response)
+      }
+
+      // Simüle edilmiş sayfalama - 5 sayfadan sonra veri bitsin
+      commit('setHasMore', state.currentPage < 5)
+      commit('setCurrentPage', state.currentPage + 1)
     } catch (error) {
-      console.error('Books fetch error:', error)
-      commit('SET_ERROR', 'Kitaplar yüklenirken bir hata oluştu')
+      commit('setError', 'Kitaplar yüklenirken bir hata oluştu')
+      console.error('Kitaplar yüklenirken hata:', error)
     } finally {
-      commit('SET_LOADING', false)
+      commit('setLoading', false)
     }
   },
 
@@ -296,12 +272,26 @@ const actions = {
     commit('SET_SELECTED_BOOK', book)
   },
 
-  updateFilters({ commit }: { commit: Commit }, filters: Partial<BooksState['filters']>) {
+  updateFilters({ commit }: { commit: Commit }, filters: BooksState['filters']) {
     commit('UPDATE_FILTERS', filters)
   },
 
   updateSort({ commit }: { commit: Commit }, sort: BooksState['sort']) {
     commit('UPDATE_SORT', sort)
+  },
+
+  async loadMoreBooks({ dispatch, state, commit }: BooksActionContext) {
+    if (state.loading || !state.hasMore) return
+
+    await dispatch('fetchBooks')
+  },
+
+  toggleFavorite({ commit }: { commit: Commit }, bookId: number) {
+    commit('toggleFavorite', bookId)
+  },
+
+  updateSortBy({ commit }: { commit: Commit }, sortBy: string) {
+    commit('setSortBy', sortBy)
   }
 }
 

@@ -1,13 +1,14 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { useStore } from 'vuex'
-import type { Book } from '@/store/types'
+import type { Book } from '@/types/book'
 
 const props = defineProps<{
   book: Book
 }>()
 
 const store = useStore()
+const defaultImage = '/images/books/placeholder.jpg'
 
 const formattedPrice = computed(() => {
   const rate = store.getters['currency/getRate']('TRY')
@@ -19,27 +20,28 @@ const formattedPrice = computed(() => {
   }).format(price)
 })
 
-const isFavorite = computed(() => store.getters['favorites/isFavorite'](props.book.id))
+const isFavorite = computed(() => props.book.isFavorite)
 
 const toggleFavorite = () => {
-  if (isFavorite.value) {
-    store.dispatch('favorites/removeFromFavorites', props.book.id)
-  } else {
-    store.dispatch('favorites/addToFavorites', props.book)
-  }
+  store.dispatch('books/toggleFavorite', props.book.id)
+}
+
+const handleImageError = (e: Event) => {
+  const img = e.target as HTMLImageElement
+  img.src = defaultImage
 }
 </script>
 
 <template>
   <div class="book-card">
     <div class="book-image">
-      <img :src="book.coverImage" :alt="book.title" class="book-cover">
+      <img :src="book.coverImage" :alt="book.title" class="book-cover" @error="handleImageError">
       <button 
         class="favorite-button"
         :class="{ active: isFavorite }"
         @click="toggleFavorite"
       >
-        ♥
+        <i class="fa-heart" :class="isFavorite ? 'fas' : 'far'"></i>
       </button>
     </div>
     
@@ -67,22 +69,31 @@ const toggleFavorite = () => {
 
 <style lang="scss" scoped>
 .book-card {
-  background: var(--color-card-bg);
-  border-radius: 8px;
+  background: var(--color-background-soft);
+  border-radius: $border-radius;
   overflow: hidden;
-  transition: transform 0.2s, box-shadow 0.2s;
+  transition: all 0.3s ease;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--color-border);
+  width: 100%;
   
   &:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   }
 }
 
 .book-image {
   position: relative;
-  aspect-ratio: 2/3;
+  width: 100%;
+  aspect-ratio: 3/4;
+  overflow: hidden;
+  background: #f5f5f5;
+  max-height: 280px;
   
-  img {
+  .book-cover {
     width: 100%;
     height: 100%;
     object-fit: cover;
@@ -91,88 +102,105 @@ const toggleFavorite = () => {
 
 .favorite-button {
   position: absolute;
-  top: 0.5rem;
-  right: 0.5rem;
+  top: $spacing-2;
+  right: $spacing-2;
   width: 32px;
   height: 32px;
   border-radius: 50%;
   border: none;
   background: white;
-  color: #ccc;
+  color: #999;
   cursor: pointer;
   transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  z-index: 1;
   
   &.active {
-    background: var(--color-primary);
-    color: white;
+    background: white;
+    color: #ff4757;
   }
   
   &:hover {
     transform: scale(1.1);
+    color: #ff4757;
   }
 }
 
 .book-info {
-  padding: 1rem;
+  padding: $spacing-3;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
   
   .book-title {
-    margin: 0 0 0.5rem;
-    font-size: 1rem;
-    line-height: 1.4;
+    font-size: $font-size-base;
+    margin: 0 0 $spacing-1;
+    font-weight: $font-weight-bold;
+    color: var(--color-heading);
   }
   
   .book-author {
+    font-size: $font-size-sm;
+    margin: 0 0 $spacing-1;
     color: var(--color-text-light);
-    font-size: 0.9rem;
-    margin: 0 0 0.5rem;
   }
   
   .book-description {
-    color: var(--color-text-secondary);
-    font-size: 0.9rem;
-    margin: 0 0 1rem;
+    font-size: $font-size-sm;
+    margin: 0 0 $spacing-2;
+    color: var(--color-text);
     display: -webkit-box;
-    -webkit-line-clamp: 3;
+    -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
+    flex: 1;
   }
   
   .book-price {
-    font-weight: 600;
+    font-size: $font-size-base;
+    margin: 0 0 $spacing-2;
+    font-weight: $font-weight-bold;
     color: var(--color-primary);
-    margin: 0 0 1rem;
   }
 
   .book-rating {
+    margin-bottom: $spacing-2;
     display: flex;
     align-items: center;
-    gap: 0.5rem;
-
+    gap: $spacing-1;
+    
     .stars {
-      color: var(--color-warning);
+      color: #ffd700;
+      font-size: $font-size-sm;
     }
 
     .rating-value {
-      color: var(--color-text-secondary);
-      font-size: 0.9rem;
+      color: var(--color-text-light);
+      font-size: $font-size-sm;
     }
   }
 }
 
 .book-actions {
   display: flex;
-  gap: 0.5rem;
+  gap: $spacing-2;
 }
 
 .view-button {
   flex: 1;
-  padding: 0.5rem;
+  padding: $spacing-2;
   background: var(--color-primary);
   color: white;
   text-decoration: none;
-  border-radius: 4px;
+  border-radius: $border-radius;
   text-align: center;
-  transition: background 0.2s;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-medium;
+  transition: all 0.2s;
   
   &:hover {
     background: var(--color-primary-dark);
