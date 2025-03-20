@@ -92,6 +92,7 @@ const getters = {
         case 'rating':
           return (a.rating - b.rating) * order
         case 'publishDate':
+          if (!a.publishDate || !b.publishDate) return 0
           return (new Date(a.publishDate).getTime() - new Date(b.publishDate).getTime()) * order
         default:
           return 0
@@ -154,86 +155,88 @@ const mutations = {
   },
   setSortBy(state: BooksState, sortBy: string) {
     state.sort.field = sortBy
+  },
+  addBook(state: BooksState, book: Book) {
+    state.books.push(book)
+  },
+  updateBook(state: BooksState, updatedBook: Book) {
+    const index = state.books.findIndex(book => book.id === updatedBook.id)
+    if (index !== -1) {
+      state.books[index] = updatedBook
+    }
   }
 }
 
 const actions = {
   async initialize({ commit }: { commit: Commit }) {
-    try {
-      commit('SET_LOADING', true)
-      commit('SET_ERROR', null)
+    commit('SET_LOADING', true)
+    commit('SET_ERROR', null)
 
-      // Mock kitap verisi
-      const mockBooks: Book[] = [
-        {
-          id: 1,
-          title: "1984",
-          author: "George Orwell",
-          description: "Distopik bir gelecekte geçen, gözetim toplumunu ve totaliter rejimi eleştiren başyapıt...",
-          price: 45.99,
-          rating: 4.8,
-          publishDate: "1949-06-08",
-          coverImage: "/images/books/1984.jpg",
-          category: "Roman",
-          isFavorite: false
-        },
-        {
-          id: 2,
-          title: "Atomik Alışkanlıklar",
-          author: "James Clear",
-          description: "Küçük değişikliklerle büyük sonuçlar elde etmenin bilimsel yöntemlerini anlatan kişisel gelişim kitabı...",
-          price: 52.99,
-          rating: 4.9,
-          publishDate: "2018-10-16",
-          coverImage: "/images/books/atomic-habits.jpg",
-          category: "Kişisel Gelişim",
-          isFavorite: false
-        },
-        {
-          id: 3,
-          title: "Suç ve Ceza",
-          author: "Fyodor Dostoyevski",
-          description: "İnsanın karanlık yönlerini ve vicdan kavramını derinlemesine inceleyen psikolojik roman...",
-          price: 49.99,
-          rating: 4.7,
-          publishDate: "1866-01-01",
-          coverImage: "/images/books/crime-and-punishment.jpg",
-          category: "Roman",
-          isFavorite: false
-        },
-        {
-          id: 4,
-          title: "Dune",
-          author: "Frank Herbert",
-          description: "Bilim kurgu edebiyatının en önemli eserlerinden biri...",
-          price: 65.99,
-          rating: 4.6,
-          publishDate: "1965-08-01",
-          coverImage: "/images/books/dune.jpg",
-          category: "Bilim Kurgu",
-          isFavorite: false
-        },
-        {
-          id: 5,
-          title: "Yüzüklerin Efendisi",
-          author: "J.R.R. Tolkien",
-          description: "Fantastik edebiyatın başyapıtı, epik bir macera...",
-          price: 89.99,
-          rating: 4.9,
-          publishDate: "1954-07-29",
-          coverImage: "/images/books/lord-of-the-rings.jpg",
-          category: "Fantastik",
-          isFavorite: false
-        }
-      ]
+    // Mock kitap verisi
+    const mockBooks: Book[] = [
+      {
+        id: 1,
+        title: "1984",
+        author: "George Orwell",
+        description: "Distopik bir gelecekte geçen, gözetim toplumunu ve totaliter rejimi eleştiren başyapıt...",
+        price: 45.99,
+        rating: 4.8,
+        publishDate: "1949-06-08",
+        coverImage: "/images/books/1984.jpg",
+        category: "Roman",
+        isFavorite: false
+      },
+      {
+        id: 2,
+        title: "Atomik Alışkanlıklar",
+        author: "James Clear",
+        description: "Küçük değişikliklerle büyük sonuçlar elde etmenin bilimsel yöntemlerini anlatan kişisel gelişim kitabı...",
+        price: 52.99,
+        rating: 4.9,
+        publishDate: "2018-10-16",
+        coverImage: "/images/books/atomic-habits.jpg",
+        category: "Kişisel Gelişim",
+        isFavorite: false
+      },
+      {
+        id: 3,
+        title: "Suç ve Ceza",
+        author: "Fyodor Dostoyevski",
+        description: "İnsanın karanlık yönlerini ve vicdan kavramını derinlemesine inceleyen psikolojik roman...",
+        price: 49.99,
+        rating: 4.7,
+        publishDate: "1866-01-01",
+        coverImage: "/images/books/crime-and-punishment.jpg",
+        category: "Roman",
+        isFavorite: false
+      },
+      {
+        id: 4,
+        title: "Dune",
+        author: "Frank Herbert",
+        description: "Bilim kurgu edebiyatının en önemli eserlerinden biri...",
+        price: 65.99,
+        rating: 4.6,
+        publishDate: "1965-08-01",
+        coverImage: "/images/books/dune.jpg",
+        category: "Bilim Kurgu",
+        isFavorite: false
+      },
+      {
+        id: 5,
+        title: "Yüzüklerin Efendisi",
+        author: "J.R.R. Tolkien",
+        description: "Fantastik edebiyatın başyapıtı, epik bir macera...",
+        price: 89.99,
+        rating: 4.9,
+        publishDate: "1954-07-29",
+        coverImage: "/images/books/lord-of-the-rings.jpg",
+        category: "Fantastik",
+        isFavorite: false
+      }
+    ]
 
-      commit('SET_BOOKS', mockBooks)
-    } catch (error) {
-      console.error('Books initialization error:', error)
-      commit('SET_ERROR', 'Kitaplar yüklenirken bir hata oluştu')
-    } finally {
-      commit('SET_LOADING', false)
-    }
+    commit('SET_BOOKS', mockBooks)
   },
 
   async fetchBooks({ commit, state }: BooksActionContext) {
@@ -321,6 +324,45 @@ const actions = {
     } catch (error) {
       console.error('Kitap detayları yüklenirken hata:', error)
       commit('setError', 'Kitap detayları yüklenirken bir hata oluştu')
+      throw error
+    } finally {
+      commit('setLoading', false)
+    }
+  },
+
+  async addBook({ commit }: { commit: Commit }, book: Omit<Book, 'id'>) {
+    commit('setLoading', true)
+    try {
+      // Simüle edilmiş API çağrısı
+      await new Promise(resolve => setTimeout(resolve, 1000))
+      
+      const newBook: Book = {
+        id: Date.now(),
+        ...book
+      }
+      
+      commit('addBook', newBook)
+      commit('setError', null)
+      return newBook
+    } catch (error) {
+      commit('setError', 'Kitap eklenirken bir hata oluştu.')
+      throw error
+    } finally {
+      commit('setLoading', false)
+    }
+  },
+
+  async updateBook({ commit }: { commit: Commit }, book: Book) {
+    commit('setLoading', true)
+    try {
+      // Simüle edilmiş API çağrısı
+      await new Promise(resolve => setTimeout(resolve, 1000))
+      
+      commit('updateBook', book)
+      commit('setError', null)
+      return book
+    } catch (error) {
+      commit('setError', 'Kitap güncellenirken bir hata oluştu.')
       throw error
     } finally {
       commit('setLoading', false)

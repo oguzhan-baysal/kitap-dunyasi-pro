@@ -4,6 +4,7 @@ import LoginView from '@/views/auth/LoginView.vue';
 import RegisterView from '@/views/auth/RegisterView.vue';
 import ForgotPasswordView from '@/views/auth/ForgotPasswordView.vue';
 import BookDetail from '@/views/BookDetail.vue';
+import BookManage from '@/views/BookManage.vue';
 import store from '@/store';
 
 const router = createRouter({
@@ -56,13 +57,19 @@ const router = createRouter({
       path: '/login',
       name: 'login',
       component: LoginView,
-      meta: { requiresGuest: true },
+      meta: {
+        title: 'Giriş Yap',
+        requiresGuest: true,
+      },
     },
     {
       path: '/register',
       name: 'register',
       component: RegisterView,
-      meta: { requiresGuest: true },
+      meta: {
+        title: 'Kayıt Ol',
+        requiresGuest: true,
+      },
     },
     {
       path: '/forgot-password',
@@ -71,16 +78,22 @@ const router = createRouter({
       meta: { requiresGuest: true },
     },
     {
-      path: '/book/add',
+      path: '/books/add',
       name: 'book-add',
-      component: () => import('@/views/BookAdd.vue'),
-      meta: { requiresAuth: true },
+      component: BookManage,
+      meta: {
+        title: 'Yeni Kitap Ekle',
+        requiresAuth: true,
+      },
     },
     {
-      path: '/book/:id/edit',
+      path: '/books/:id/edit',
       name: 'book-edit',
-      component: () => import('@/views/BookEdit.vue'),
-      meta: { requiresAuth: true },
+      component: BookManage,
+      meta: {
+        title: 'Kitap Düzenle',
+        requiresAuth: true,
+      },
     },
     {
       path: '/:pathMatch(.*)*',
@@ -107,17 +120,17 @@ router.beforeEach((to, from, next) => {
   const isAuthenticated = store.getters['auth/isAuthenticated'];
 
   // Update page title
-  document.title = `${to.meta.title} - Kitap Dünyası` || 'Kitap Dünyası';
+  document.title = `${to.meta.title} | Kitap Dünyası` || 'Kitap Dünyası';
 
   // Giriş gerektiren rotalar
   if (to.meta.requiresAuth && !isAuthenticated) {
-    next('/login');
+    next({ name: 'login' });
     return;
   }
 
   // Sadece giriş yapmamış kullanıcılar için rotalar
   if (to.meta.requiresGuest && isAuthenticated) {
-    next('/');
+    next({ name: 'home' });
     return;
   }
 

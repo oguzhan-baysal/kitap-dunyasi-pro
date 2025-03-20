@@ -1,9 +1,23 @@
 <script setup lang="ts">
-import { onMounted } from 'vue';
+import { onMounted, computed } from 'vue';
 import { useStore } from '@/store';
+import { useRouter } from 'vue-router';
 import { RouterView } from 'vue-router';
 
 const store = useStore();
+const router = useRouter();
+
+const isAuthenticated = computed(() => store.getters['auth/isAuthenticated']);
+const currentUser = computed(() => store.getters['auth/currentUser']);
+
+const handleLogout = async () => {
+  try {
+    await store.dispatch('auth/logout');
+    router.push('/login');
+  } catch (error) {
+    console.error('Çıkış yapılırken hata:', error);
+  }
+};
 
 onMounted(async () => {
   // Auth durumunu kontrol et
@@ -32,15 +46,34 @@ onMounted(async () => {
           <router-link to="/books" class="nav-link" active-class="active">
             Kitaplar
           </router-link>
+          <router-link 
+            v-if="isAuthenticated" 
+            to="/favorites" 
+            class="nav-link" 
+            active-class="active"
+          >
+            Favorilerim
+          </router-link>
         </div>
 
-        <div class="auth-buttons">
+        <!-- Giriş yapmamış kullanıcılar için -->
+        <div v-if="!isAuthenticated" class="auth-buttons">
           <router-link to="/login" class="auth-button">
             Giriş Yap
           </router-link>
           <router-link to="/register" class="auth-button register">
             Kayıt Ol
           </router-link>
+        </div>
+
+        <!-- Giriş yapmış kullanıcılar için -->
+        <div v-else class="user-menu">
+          <router-link to="/profile" class="user-button">
+            {{ currentUser?.name || 'Profilim' }}
+          </router-link>
+          <button @click="handleLogout" class="logout-button">
+            Çıkış Yap
+          </button>
         </div>
       </nav>
     </header>
@@ -52,7 +85,7 @@ onMounted(async () => {
 </template>
 
 <style lang="scss">
-@import '@/assets/styles/_variables.scss';
+@use '@/assets/styles/_variables.scss' as *;
 
 .app-container {
   min-height: 100vh;
@@ -136,6 +169,43 @@ onMounted(async () => {
       &:hover {
         background: var(--color-primary-dark);
       }
+    }
+  }
+}
+
+.user-menu {
+  display: flex;
+  gap: $spacing-3;
+  align-items: center;
+
+  .user-button {
+    color: var(--color-text);
+    text-decoration: none;
+    font-weight: $font-weight-medium;
+    padding: $spacing-2 $spacing-4;
+    border-radius: $border-radius;
+    transition: all 0.2s;
+
+    &:hover {
+      color: var(--color-primary);
+      background: var(--color-background-soft);
+    }
+  }
+
+  .logout-button {
+    padding: $spacing-2 $spacing-4;
+    border-radius: $border-radius;
+    border: 1px solid var(--color-border);
+    background: transparent;
+    color: var(--color-text);
+    font-weight: $font-weight-medium;
+    cursor: pointer;
+    transition: all 0.2s;
+
+    &:hover {
+      border-color: var(--color-error);
+      color: var(--color-error);
+      background: var(--color-background-soft);
     }
   }
 }

@@ -10,7 +10,7 @@ export interface AuthState {
   user: User | null
   token: string | null
   refreshToken: string | null
-  tokenExpiresAt: number | null
+  tokenExpiresAt: number
   loading: boolean
   error: string | null
 }

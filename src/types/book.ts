@@ -5,8 +5,13 @@ export interface Book {
   description: string
   price: number
   rating: number
-  publishDate: string
+  publishDate?: string
   coverImage: string
-  category: string
-  isFavorite: boolean
+  category?: string
+  language?: string
+  pageCount?: number
+  publishYear?: number
+  publisher?: string
+  isbn?: string
+  isFavorite?: boolean
 } 

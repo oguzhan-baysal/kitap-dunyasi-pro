@@ -90,9 +90,9 @@ const storage = {
 
 const state = (): AuthState => ({
   user: null,
-  token: null,
-  refreshToken: null,
-  tokenExpiresAt: null,
+  token: localStorage.getItem('token'),
+  refreshToken: localStorage.getItem('refreshToken'),
+  tokenExpiresAt: Number(localStorage.getItem('tokenExpiresAt')) || 0,
   loading: false,
   error: null
 })
@@ -101,70 +101,65 @@ const getters = {
   isAuthenticated: (state: AuthState): boolean => !!state.token,
   currentUser: (state: AuthState) => state.user,
   loading: (state: AuthState): boolean => state.loading,
-  error: (state: AuthState): string | null => state.error,
-  isTokenExpired: (state: AuthState): boolean => {
-    if (!state.tokenExpiresAt) return true
-    return Date.now() >= state.tokenExpiresAt
-  }
+  error: (state: AuthState): string | null => state.error
 }
 
 const mutations = {
   SET_USER(state: AuthState, user: AuthState['user']) {
     state.user = user
   },
-  SET_TOKEN_DATA(state: AuthState, data: TokenData) {
-    state.token = data.token
-    state.refreshToken = data.refreshToken
-    state.tokenExpiresAt = data.expiresAt
+  SET_TOKEN(state: AuthState, token: string | null) {
+    state.token = token
+    if (token) {
+      localStorage.setItem('token', token)
+    } else {
+      localStorage.removeItem('token')
+    }
+  },
+  SET_REFRESH_TOKEN(state: AuthState, refreshToken: string | null) {
+    state.refreshToken = refreshToken
+    if (refreshToken) {
+      localStorage.setItem('refreshToken', refreshToken)
+    } else {
+      localStorage.removeItem('refreshToken')
+    }
+  },
+  SET_TOKEN_EXPIRES_AT(state: AuthState, expiresAt: number) {
+    state.tokenExpiresAt = expiresAt
+    localStorage.setItem('tokenExpiresAt', String(expiresAt))
   },
   SET_LOADING(state: AuthState, loading: boolean) {
     state.loading = loading
   },
   SET_ERROR(state: AuthState, error: string | null) {
     state.error = error
-  },
-  CLEAR_AUTH(state: AuthState) {
-    state.user = null
-    state.token = null
-    state.refreshToken = null
-    state.tokenExpiresAt = null
-    state.error = null
   }
 }
 
 const actions = {
-  async login({ commit, dispatch }: AuthContext, credentials: LoginCredentials) {
+  async login({ commit }: { commit: Commit }, credentials: { email: string; password: string }) {
     commit('SET_LOADING', true)
     commit('SET_ERROR', null)
-
+    
     try {
-      // Mock API çağrısı
+      // Simüle edilmiş API çağrısı
       await new Promise(resolve => setTimeout(resolve, 1000))
-
+      
       if (credentials.email === 'test@example.com' && credentials.password === 'password') {
-        const user = {
+        const mockUser = {
           id: 1,
-          name: 'Test Kullanıcı',
-          email: 'test@example.com'
+          email: credentials.email,
+          name: 'Test Kullanıcı'
         }
+        const mockToken = 'mock-jwt-token'
+        const mockRefreshToken = 'mock-refresh-token'
+        const expiresAt = Date.now() + TOKEN_DURATION.ACCESS
         
-        const tokenData: TokenData = {
-          token: 'mock_jwt_token',
-          refreshToken: 'mock_refresh_token',
-          expiresAt: Date.now() + TOKEN_DURATION.ACCESS
-        }
-
-        commit('SET_USER', user)
-        commit('SET_TOKEN_DATA', tokenData)
-
-        // Token verilerini localStorage'a kaydet
-        storage.setItem(STORAGE_KEYS.USER, user)
-        storage.setItem(STORAGE_KEYS.TOKEN, tokenData.token)
-        storage.setItem(STORAGE_KEYS.REFRESH_TOKEN, tokenData.refreshToken)
-        storage.setItem(STORAGE_KEYS.TOKEN_EXPIRY, tokenData.expiresAt)
-
-        // Token yenileme zamanlayıcısını başlat
-        dispatch('startTokenRefreshTimer')
+        commit('SET_USER', mockUser)
+        commit('SET_TOKEN', mockToken)
+        commit('SET_REFRESH_TOKEN', mockRefreshToken)
+        commit('SET_TOKEN_EXPIRES_AT', expiresAt)
+        return mockUser
       } else {
         throw new Error('Geçersiz e-posta veya şifre')
       }
@@ -176,34 +171,28 @@ const actions = {
     }
   },
 
-  async register({ commit, dispatch }: AuthContext, credentials: RegisterCredentials) {
+  async register({ commit }: { commit: Commit }, userData: { email: string; password: string; name: string }) {
     commit('SET_LOADING', true)
     commit('SET_ERROR', null)
-
+    
     try {
+      // Simüle edilmiş API çağrısı
       await new Promise(resolve => setTimeout(resolve, 1000))
-
-      const user = {
+      
+      const mockUser = {
         id: Date.now(),
-        name: credentials.name,
-        email: credentials.email
+        email: userData.email,
+        name: userData.name
       }
-
-      const tokenData: TokenData = {
-        token: 'mock_jwt_token',
-        refreshToken: 'mock_refresh_token',
-        expiresAt: Date.now() + TOKEN_DURATION.ACCESS
-      }
-
-      commit('SET_USER', user)
-      commit('SET_TOKEN_DATA', tokenData)
-
-      storage.setItem(STORAGE_KEYS.USER, user)
-      storage.setItem(STORAGE_KEYS.TOKEN, tokenData.token)
-      storage.setItem(STORAGE_KEYS.REFRESH_TOKEN, tokenData.refreshToken)
-      storage.setItem(STORAGE_KEYS.TOKEN_EXPIRY, tokenData.expiresAt)
-
-      dispatch('startTokenRefreshTimer')
+      const mockToken = 'mock-jwt-token'
+      const mockRefreshToken = 'mock-refresh-token'
+      const expiresAt = Date.now() + TOKEN_DURATION.ACCESS
+      
+      commit('SET_USER', mockUser)
+      commit('SET_TOKEN', mockToken)
+      commit('SET_REFRESH_TOKEN', mockRefreshToken)
+      commit('SET_TOKEN_EXPIRES_AT', expiresAt)
+      return mockUser
     } catch (error) {
       commit('SET_ERROR', error instanceof Error ? error.message : 'Kayıt olurken bir hata oluştu')
       throw error
@@ -212,114 +201,50 @@ const actions = {
     }
   },
 
-  async logout({ commit }: AuthContext) {
-    storage.clear()
-    commit('CLEAR_AUTH')
-    router.push('/login')
-  },
-
-  async checkAuth({ commit, dispatch, getters }: AuthContext) {
-    const token = storage.getItem<string>(STORAGE_KEYS.TOKEN)
-    const refreshToken = storage.getItem<string>(STORAGE_KEYS.REFRESH_TOKEN)
-    const expiresAt = storage.getItem<number>(STORAGE_KEYS.TOKEN_EXPIRY)
-    const user = storage.getItem(STORAGE_KEYS.USER)
-
-    if (token && refreshToken && expiresAt && user) {
-      commit('SET_TOKEN_DATA', { token, refreshToken, expiresAt })
-      commit('SET_USER', user)
-
-      // Token süresi dolmuşsa yenile
-      if (getters.isTokenExpired) {
-        await dispatch('refreshToken')
-      } else {
-        dispatch('startTokenRefreshTimer')
-      }
-    }
-  },
-
-  async refreshToken({ commit, state }: AuthContext) {
-    if (!state.refreshToken) {
-      throw new Error('Refresh token bulunamadı')
-    }
-
-    try {
-      // Mock API çağrısı
-      await new Promise(resolve => setTimeout(resolve, 500))
-
-      const tokenData: TokenData = {
-        token: 'new_mock_jwt_token',
-        refreshToken: state.refreshToken,
-        expiresAt: Date.now() + TOKEN_DURATION.ACCESS
-      }
-
-      commit('SET_TOKEN_DATA', tokenData)
-
-      storage.setItem(STORAGE_KEYS.TOKEN, tokenData.token)
-      storage.setItem(STORAGE_KEYS.TOKEN_EXPIRY, tokenData.expiresAt)
-
-      return tokenData
-    } catch (error) {
-      commit('SET_ERROR', 'Token yenilenirken hata oluştu')
-      throw error
-    }
-  },
-
-  startTokenRefreshTimer({ dispatch, getters }: AuthContext) {
-    // Her 5 dakikada bir token kontrolü yap
-    setInterval(async () => {
-      if (getters.isTokenExpired) {
-        try {
-          await dispatch('refreshToken')
-        } catch (error) {
-          // Refresh token hatası durumunda kullanıcıyı çıkış yaptır
-          dispatch('logout')
-        }
-      }
-    }, 5 * 60 * 1000)
-  },
-
-  async updateProfile({ commit, state }: AuthContext, data: UpdateProfileData) {
+  async logout({ commit }: { commit: Commit }) {
     commit('SET_LOADING', true)
-    commit('SET_ERROR', null)
-
+    
     try {
-      // Mock API çağrısı
-      await new Promise(resolve => setTimeout(resolve, 1000))
-
-      const updatedUser = {
-        ...state.user,
-        name: data.name,
-        email: data.email
-      }
-
-      commit('SET_USER', updatedUser)
-      storage.setItem(STORAGE_KEYS.USER, updatedUser)
-
-      return { message: 'Profil başarıyla güncellendi' }
+      // Simüle edilmiş API çağrısı
+      await new Promise(resolve => setTimeout(resolve, 500))
+      
+      commit('SET_USER', null)
+      commit('SET_TOKEN', null)
+      commit('SET_REFRESH_TOKEN', null)
+      commit('SET_TOKEN_EXPIRES_AT', 0)
+      storage.clear()
     } catch (error) {
-      commit('SET_ERROR', error instanceof Error ? error.message : 'Profil güncellenirken bir hata oluştu')
+      commit('SET_ERROR', error instanceof Error ? error.message : 'Çıkış yapılırken bir hata oluştu')
       throw error
     } finally {
       commit('SET_LOADING', false)
     }
   },
 
-  async changePassword({ commit }: AuthContext, data: ChangePasswordData) {
+  async checkAuth({ commit, state }: { commit: Commit; state: AuthState }) {
+    if (!state.token) return null
+    
     commit('SET_LOADING', true)
-    commit('SET_ERROR', null)
-
+    
     try {
-      // Mock API çağrısı
-      await new Promise(resolve => setTimeout(resolve, 1000))
-
-      // Mevcut şifre kontrolü
-      if (data.currentPassword !== 'password') {
-        throw new Error('Mevcut şifre yanlış')
+      // Simüle edilmiş API çağrısı
+      await new Promise(resolve => setTimeout(resolve, 500))
+      
+      // Token varsa kullanıcı bilgilerini getir
+      const mockUser = {
+        id: 1,
+        email: 'test@example.com',
+        name: 'Test Kullanıcı'
       }
-
-      return { message: 'Şifre başarıyla değiştirildi' }
+      
+      commit('SET_USER', mockUser)
+      return mockUser
     } catch (error) {
-      commit('SET_ERROR', error instanceof Error ? error.message : 'Şifre değiştirilirken bir hata oluştu')
+      commit('SET_ERROR', error instanceof Error ? error.message : 'Kimlik doğrulama hatası')
+      commit('SET_TOKEN', null)
+      commit('SET_REFRESH_TOKEN', null)
+      commit('SET_TOKEN_EXPIRES_AT', 0)
+      commit('SET_USER', null)
       throw error
     } finally {
       commit('SET_LOADING', false)

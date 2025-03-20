@@ -129,8 +129,8 @@ onMounted(async () => {
   </main>
 </template>
 
-<style lang="scss" scoped>
-@import '@/assets/styles/_variables.scss';
+<style lang="scss">
+@use '@/assets/styles/_variables.scss' as *;
 
 .home {
   padding: $spacing-6;

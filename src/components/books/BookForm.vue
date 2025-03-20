@@ -1,259 +1,207 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import { useStore } from 'vuex'
-import type { Book } from '@/types'
+import type { Book } from '@/types/book'
+import { useVuelidate } from '@vuelidate/core'
+import { required, minLength, numeric, decimal } from '@vuelidate/validators'
 
 const props = defineProps<{
   initialBook?: Book
 }>()
 
-const store = useStore()
+const steps = ['Temel Bilgiler', 'Detaylar', 'Görsel']
+const currentStep = ref(0)
+const selectedImage = ref<File | null>(null)
+const imagePreview = ref('')
 
-const steps = [
-  { id: 1, title: 'Temel Bilgiler' },
-  { id: 2, title: 'Detaylar' },
-  { id: 3, title: 'Görsel ve Açıklama' }
-]
-
-const currentStep = ref(1)
-const formData = ref({
+const book = ref<Partial<Book>>({
   title: props.initialBook?.title || '',
   author: props.initialBook?.author || '',
-  price: props.initialBook?.price || 0,
-  category: props.initialBook?.category || '',
-  language: props.initialBook?.language || '',
-  pageCount: props.initialBook?.pageCount || 0,
-  publishYear: props.initialBook?.publishYear || new Date().getFullYear(),
-  publisher: props.initialBook?.publisher || '',
-  isbn: props.initialBook?.isbn || '',
   description: props.initialBook?.description || '',
-  coverImage: props.initialBook?.coverImage || ''
+  price: props.initialBook?.price || 0,
+  rating: props.initialBook?.rating || 0,
+  coverImage: props.initialBook?.coverImage || '',
+  ...props.initialBook
 })
 
-const categories = [
-  'Roman',
-  'Öykü',
-  'Şiir',
-  'Bilim',
-  'Tarih',
-  'Felsefe'
-]
+const rules = computed(() => ({
+  title: { required, minLength: minLength(3) },
+  author: { required, minLength: minLength(3) },
+  description: { required, minLength: minLength(10) },
+  price: { required, decimal },
+  rating: { required, numeric, min: 0, max: 5 }
+}))
 
-const languages = [
-  'Türkçe',
-  'İngilizce',
-  'Almanca',
-  'Fransızca'
-]
+const v$ = useVuelidate(rules, book)
 
-const isEditing = computed(() => !!props.initialBook)
+const emit = defineEmits<{
+  (e: 'submit', book: Book): void
+}>()
 
-const emit = defineEmits(['submit'])
+const nextStep = async () => {
+  const stepValidation = await v$.value.$validate()
+  if (!stepValidation) return
 
-const nextStep = () => {
-  if (currentStep.value < steps.length) {
+  if (currentStep.value < steps.length - 1) {
     currentStep.value++
   }
 }
 
 const prevStep = () => {
-  if (currentStep.value > 1) {
+  if (currentStep.value > 0) {
     currentStep.value--
   }
 }
 
-const handleImageUpload = (event: Event) => {
-  const file = (event.target as HTMLInputElement).files?.[0]
-  if (file) {
-    const reader = new FileReader()
-    reader.onload = (e) => {
-      formData.value.coverImage = e.target?.result as string
-    }
-    reader.readAsDataURL(file)
+const handleImageSelect = (event: Event) => {
+  const input = event.target as HTMLInputElement
+  if (input.files && input.files[0]) {
+    selectedImage.value = input.files[0]
+    imagePreview.value = URL.createObjectURL(input.files[0])
+    book.value.coverImage = imagePreview.value
   }
 }
 
-const handleSubmit = () => {
-  emit('submit', {
-    ...formData.value,
-    id: props.initialBook?.id || Date.now().toString()
-  })
+const handleSubmit = async () => {
+  const isValid = await v$.value.$validate()
+  if (!isValid) return
+
+  emit('submit', book.value as Book)
 }
 </script>
 
 <template>
   <div class="book-form">
     <div class="steps">
-      <div 
-        v-for="step in steps" 
-        :key="step.id"
+      <div
+        v-for="(step, index) in steps"
+        :key="step"
         class="step"
-        :class="{ active: currentStep === step.id, completed: currentStep > step.id }"
+        :class="{ active: index === currentStep, completed: index < currentStep }"
       >
-        <div class="step-number">{{ step.id }}</div>
-        <div class="step-title">{{ step.title }}</div>
+        <div class="step-number">{{ index + 1 }}</div>
+        <div class="step-title">{{ step }}</div>
       </div>
     </div>
 
-    <form @submit.prevent="handleSubmit">
+    <form @submit.prevent="handleSubmit" class="form-content">
       <!-- Adım 1: Temel Bilgiler -->
-      <div v-if="currentStep === 1" class="form-step">
+      <div v-if="currentStep === 0" class="form-step">
         <div class="form-group">
-          <label>Kitap Adı</label>
-          <input 
-            v-model="formData.title"
+          <label for="title">Kitap Adı</label>
+          <input
+            id="title"
+            v-model="book.title"
             type="text"
-            required
-            placeholder="Kitap adını girin"
+            :class="{ error: v$.title.$error }"
           >
+          <span v-if="v$.title.$error" class="error-text">
+            Kitap adı en az 3 karakter olmalıdır
+          </span>
         </div>
 
         <div class="form-group">
-          <label>Yazar</label>
-          <input 
-            v-model="formData.author"
+          <label for="author">Yazar</label>
+          <input
+            id="author"
+            v-model="book.author"
             type="text"
-            required
-            placeholder="Yazar adını girin"
+            :class="{ error: v$.author.$error }"
           >
+          <span v-if="v$.author.$error" class="error-text">
+            Yazar adı en az 3 karakter olmalıdır
+          </span>
         </div>
 
         <div class="form-group">
-          <label>Fiyat</label>
-          <input 
-            v-model.number="formData.price"
+          <label for="price">Fiyat</label>
+          <input
+            id="price"
+            v-model="book.price"
             type="number"
-            required
-            min="0"
             step="0.01"
+            :class="{ error: v$.price.$error }"
           >
+          <span v-if="v$.price.$error" class="error-text">
+            Geçerli bir fiyat giriniz
+          </span>
         </div>
       </div>
 
       <!-- Adım 2: Detaylar -->
-      <div v-if="currentStep === 2" class="form-step">
+      <div v-if="currentStep === 1" class="form-step">
         <div class="form-group">
-          <label>Kategori</label>
-          <select v-model="formData.category" required>
-            <option value="">Kategori seçin</option>
-            <option 
-              v-for="category in categories" 
-              :key="category"
-              :value="category"
-            >
-              {{ category }}
-            </option>
-          </select>
+          <label for="description">Açıklama</label>
+          <textarea
+            id="description"
+            v-model="book.description"
+            rows="6"
+            :class="{ error: v$.description.$error }"
+          ></textarea>
+          <span v-if="v$.description.$error" class="error-text">
+            Açıklama en az 10 karakter olmalıdır
+          </span>
         </div>
 
         <div class="form-group">
-          <label>Dil</label>
-          <select v-model="formData.language" required>
-            <option value="">Dil seçin</option>
-            <option 
-              v-for="language in languages" 
-              :key="language"
-              :value="language"
-            >
-              {{ language }}
-            </option>
-          </select>
-        </div>
-
-        <div class="form-group">
-          <label>Sayfa Sayısı</label>
-          <input 
-            v-model.number="formData.pageCount"
+          <label for="rating">Değerlendirme</label>
+          <input
+            id="rating"
+            v-model="book.rating"
             type="number"
-            required
-            min="1"
+            min="0"
+            max="5"
+            step="0.1"
+            :class="{ error: v$.rating.$error }"
           >
-        </div>
-
-        <div class="form-group">
-          <label>Yayın Yılı</label>
-          <input 
-            v-model.number="formData.publishYear"
-            type="number"
-            required
-            :max="new Date().getFullYear()"
-          >
-        </div>
-
-        <div class="form-group">
-          <label>Yayınevi</label>
-          <input 
-            v-model="formData.publisher"
-            type="text"
-            required
-          >
-        </div>
-
-        <div class="form-group">
-          <label>ISBN</label>
-          <input 
-            v-model="formData.isbn"
-            type="text"
-            required
-            pattern="[0-9]{13}"
-            placeholder="13 haneli ISBN numarası"
-          >
+          <span v-if="v$.rating.$error" class="error-text">
+            Değerlendirme 0-5 arasında olmalıdır
+          </span>
         </div>
       </div>
 
-      <!-- Adım 3: Görsel ve Açıklama -->
-      <div v-if="currentStep === 3" class="form-step">
+      <!-- Adım 3: Görsel -->
+      <div v-if="currentStep === 2" class="form-step">
         <div class="form-group">
-          <label>Kapak Görseli</label>
-          <input 
-            type="file"
-            accept="image/*"
-            @change="handleImageUpload"
-          >
-          <img 
-            v-if="formData.coverImage"
-            :src="formData.coverImage"
-            alt="Kapak önizleme"
-            class="cover-preview"
-          >
-        </div>
-
-        <div class="form-group">
-          <label>Açıklama</label>
-          <textarea 
-            v-model="formData.description"
-            required
-            rows="5"
-            placeholder="Kitap açıklamasını girin"
-          ></textarea>
+          <label for="image">Kitap Kapağı</label>
+          <div class="image-upload">
+            <input
+              id="image"
+              type="file"
+              accept="image/*"
+              @change="handleImageSelect"
+            >
+            <div v-if="imagePreview" class="image-preview">
+              <img :src="imagePreview" alt="Kitap kapağı önizleme">
+            </div>
+          </div>
         </div>
       </div>
 
       <div class="form-actions">
-        <button 
-          type="button" 
-          class="btn btn-secondary"
+        <button
+          type="button"
+          class="btn-secondary"
           @click="prevStep"
-          v-if="currentStep > 1"
+          v-if="currentStep > 0"
         >
           Geri
         </button>
-
-        <button 
-          v-if="currentStep < steps.length"
-          type="button" 
-          class="btn btn-primary"
+        
+        <button
+          v-if="currentStep < steps.length - 1"
+          type="button"
+          class="btn-primary"
           @click="nextStep"
         >
           İleri
         </button>
 
-        <button 
+        <button
           v-else
-          type="submit" 
-          class="btn btn-success"
+          type="submit"
+          class="btn-success"
         >
-          {{ isEditing ? 'Güncelle' : 'Kaydet' }}
+          Kaydet
         </button>
       </div>
     </form>
@@ -261,40 +209,43 @@ const handleSubmit = () => {
 </template>
 
 <style lang="scss" scoped>
+@use '@/assets/styles/_variables.scss' as *;
+
 .book-form {
   max-width: 800px;
   margin: 0 auto;
-  padding: 2rem;
-  background: var(--color-card-bg);
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  padding: $spacing-6;
+  background: var(--color-background-soft);
+  border-radius: $border-radius;
 }
 
 .steps {
   display: flex;
   justify-content: space-between;
-  margin-bottom: 2rem;
-  padding-bottom: 1rem;
-  border-bottom: 1px solid var(--color-border);
+  margin-bottom: $spacing-8;
+  padding: 0 $spacing-4;
 
   .step {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: $spacing-2;
+    color: var(--color-text-light);
 
     &.active {
+      color: var(--color-primary);
+
       .step-number {
         background: var(--color-primary);
         color: white;
       }
-      .step-title {
-        color: var(--color-primary);
-      }
     }
 
     &.completed {
+      color: var(--color-success);
+
       .step-number {
         background: var(--color-success);
+        color: white;
       }
     }
 
@@ -304,89 +255,151 @@ const handleSubmit = () => {
       display: flex;
       align-items: center;
       justify-content: center;
-      background: var(--color-border);
-      color: var(--color-text-secondary);
       border-radius: 50%;
-      font-weight: bold;
+      background: var(--color-border);
+      color: var(--color-text);
+      font-weight: $font-weight-medium;
     }
 
     .step-title {
-      color: var(--color-text-secondary);
-      font-weight: 500;
+      font-weight: $font-weight-medium;
     }
   }
 }
 
-.form-step {
-  display: grid;
-  gap: 1rem;
-}
-
-.form-group {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-
-  label {
-    font-weight: 500;
-    color: var(--color-text-primary);
+.form-content {
+  .form-step {
+    animation: fadeIn 0.3s ease-in-out;
   }
 
-  input, select, textarea {
-    padding: 0.5rem;
-    border: 1px solid var(--color-border);
-    border-radius: 4px;
-    font-size: 1rem;
+  .form-group {
+    margin-bottom: $spacing-4;
 
-    &:focus {
-      outline: none;
-      border-color: var(--color-primary);
+    label {
+      display: block;
+      margin-bottom: $spacing-2;
+      color: var(--color-text);
+      font-weight: $font-weight-medium;
+    }
+
+    input,
+    textarea {
+      width: 100%;
+      padding: $spacing-3;
+      border: 1px solid var(--color-border);
+      border-radius: $border-radius;
+      background: var(--color-background);
+      color: var(--color-text);
+      font-family: inherit;
+
+      &.error {
+        border-color: var(--color-error);
+      }
+
+      &:focus {
+        outline: none;
+        border-color: var(--color-primary);
+      }
+    }
+
+    textarea {
+      resize: vertical;
+    }
+
+    .error-text {
+      display: block;
+      margin-top: $spacing-1;
+      color: var(--color-error);
+      font-size: $font-size-sm;
     }
   }
 
-  textarea {
-    resize: vertical;
-  }
-}
+  .image-upload {
+    input[type="file"] {
+      margin-bottom: $spacing-4;
+    }
 
-.cover-preview {
-  max-width: 200px;
-  height: auto;
-  margin-top: 1rem;
-  border-radius: 4px;
+    .image-preview {
+      max-width: 300px;
+      margin-top: $spacing-4;
+
+      img {
+        width: 100%;
+        height: auto;
+        border-radius: $border-radius;
+      }
+    }
+  }
 }
 
 .form-actions {
   display: flex;
-  justify-content: flex-end;
-  gap: 1rem;
-  margin-top: 2rem;
+  justify-content: space-between;
+  margin-top: $spacing-6;
+  padding-top: $spacing-6;
+  border-top: 1px solid var(--color-border);
+
+  button {
+    padding: $spacing-2 $spacing-6;
+    border: none;
+    border-radius: $border-radius;
+    font-weight: $font-weight-medium;
+    cursor: pointer;
+    transition: background-color 0.2s;
+
+    &.btn-primary {
+      background: var(--color-primary);
+      color: white;
+
+      &:hover {
+        background: var(--color-primary-dark);
+      }
+    }
+
+    &.btn-secondary {
+      background: var(--color-border);
+      color: var(--color-text);
+
+      &:hover {
+        background: var(--color-border-dark);
+      }
+    }
+
+    &.btn-success {
+      background: var(--color-success);
+      color: white;
+
+      &:hover {
+        background: var(--color-success-dark);
+      }
+    }
+  }
 }
 
-.btn {
-  padding: 0.5rem 1rem;
-  border: none;
-  border-radius: 4px;
-  font-weight: 500;
-  cursor: pointer;
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
 
-  &-primary {
-    background: var(--color-primary);
-    color: white;
+@media (max-width: 768px) {
+  .book-form {
+    padding: $spacing-4;
   }
 
-  &-secondary {
-    background: var(--color-border);
-    color: var(--color-text-primary);
-  }
+  .steps {
+    flex-direction: column;
+    gap: $spacing-4;
+    margin-bottom: $spacing-6;
 
-  &-success {
-    background: var(--color-success);
-    color: white;
-  }
-
-  &:hover {
-    opacity: 0.9;
+    .step {
+      justify-content: flex-start;
+    }
   }
 }
 </style> 

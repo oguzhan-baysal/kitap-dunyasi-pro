@@ -74,8 +74,8 @@ onMounted(async () => {
   </div>
 </template>
 
-<style lang="scss" scoped>
-@import '@/assets/styles/_variables.scss';
+<style lang="scss">
+@use '@/assets/styles/_variables.scss' as *;
 
 .book-detail {
   max-width: 1200px;
