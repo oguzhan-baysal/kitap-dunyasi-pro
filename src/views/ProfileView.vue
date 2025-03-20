@@ -82,7 +82,13 @@ const handlePasswordChange = async () => {
 
 <template>
   <div class="profile-view">
-    <h1>Profilim</h1>
+    <div class="profile-header">
+      <h1>Profilim</h1>
+      <router-link to="/books/add" class="add-book-button">
+        <i class="fas fa-plus"></i>
+        Yeni Kitap Ekle
+      </router-link>
+    </div>
 
     <div v-if="loading" class="loading">
       Yükleniyor...
@@ -176,14 +182,45 @@ const handlePasswordChange = async () => {
 </template>
 
 <style lang="scss" scoped>
+@use '@/assets/styles/_variables.scss' as *;
+
 .profile-view {
   max-width: 800px;
   margin: 0 auto;
-  padding: 2rem;
+  padding: $spacing-6;
 
   h1 {
     color: var(--color-heading);
-    margin-bottom: 2rem;
+    margin-bottom: 0;
+  }
+}
+
+.profile-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: $spacing-8;
+}
+
+.add-book-button {
+  display: inline-flex;
+  align-items: center;
+  gap: $spacing-2;
+  padding: $spacing-3 $spacing-4;
+  background: var(--color-primary);
+  color: white;
+  border: none;
+  border-radius: $border-radius;
+  font-weight: $font-weight-medium;
+  text-decoration: none;
+  transition: background-color 0.2s;
+
+  i {
+    font-size: $font-size-lg;
+  }
+
+  &:hover {
+    background: var(--color-primary-dark);
   }
 }
 
