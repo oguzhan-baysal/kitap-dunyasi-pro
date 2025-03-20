@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { useStore } from '@/store'
 import type { Book } from '@/types/book'
@@ -7,12 +7,26 @@ import BookReview from '@/components/books/BookReview.vue'
 import Comments from '@/components/books/Comments.vue'
 import RelatedBooks from '@/components/books/RelatedBooks.vue'
 import ShareButtons from '@/components/common/ShareButtons.vue'
+import CurrencySelector from '@/components/ui/CurrencySelector.vue'
 
 const route = useRoute()
 const store = useStore()
 const book = ref<Book | null>(null)
 const isLoading = ref(true)
 const error = ref<string | null>(null)
+
+const formattedPrice = computed(() => {
+  if (!book.value) return ''
+  
+  const selectedCurrency = store.getters['currency/getSelectedCurrency']
+  const rate = store.getters['currency/getRate'](selectedCurrency)
+  const price = book.value.price * rate
+
+  return new Intl.NumberFormat('tr-TR', {
+    style: 'currency',
+    currency: selectedCurrency
+  }).format(price)
+})
 
 onMounted(async () => {
   try {
@@ -49,7 +63,10 @@ onMounted(async () => {
               <i v-for="n in 5" :key="n" class="fas" :class="n <= book.rating ? 'fa-star' : 'fa-star-o'"></i>
               <span>{{ book.rating }}/5</span>
             </div>
-            <p class="price">{{ book.price.toFixed(2) }} TL</p>
+            <div class="price-container">
+              <p class="price">{{ formattedPrice }}</p>
+              <CurrencySelector class="currency-selector" />
+            </div>
             <button class="add-to-cart">Sepete Ekle</button>
           </div>
         </div>
@@ -147,11 +164,22 @@ onMounted(async () => {
           }
         }
 
-        .price {
-          font-size: $font-size-xl;
-          font-weight: $font-weight-bold;
-          color: var(--color-primary);
+        .price-container {
+          display: flex;
+          align-items: center;
+          gap: $spacing-4;
           margin-bottom: $spacing-4;
+
+          .price {
+            font-size: $font-size-xl;
+            font-weight: $font-weight-bold;
+            color: var(--color-primary);
+            margin: 0;
+          }
+
+          .currency-selector {
+            min-width: 100px;
+          }
         }
 
         .add-to-cart {
