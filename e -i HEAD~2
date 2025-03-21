@@ -1,0 +1,101 @@
+[33mcommit 11a783cc360bf665c7cb27b73063f3e083728f3b[m[33m ([m[1;36mHEAD -> [m[1;32mmaster[m[33m)[m
+Author: Oguzhan <oguzhanbaysal@outlook.com>
+Date:   Fri Mar 21 18:03:06 2025 +0300
+
+    1.0: Gelişmiş filtreleme sistemi eklendi
+
+[33mcommit d7d1d1c695ac03493fdf7c40afcdc71b7cd4c283[m
+Author: Oguzhan <oguzhanbaysal@outlook.com>
+Date:   Fri Mar 21 17:53:42 2025 +0300
+
+    10
+
+[33mcommit 282a31008c6d7fb809ffdc6622bac1972a43fced[m
+Author: Oguzhan <oguzhanbaysal@outlook.com>
+Date:   Fri Mar 21 12:33:53 2025 +0300
+
+    0.8
+
+[33mcommit 3b926e53438b0cb007515db6204687bc63878923[m
+Author: Oguzhan <oguzhanbaysal@outlook.com>
+Date:   Thu Mar 20 20:04:24 2025 +0300
+
+    bookadd
+
+[33mcommit 7c57c5eaf5b2830305fc83a5c641b4adcbe973b1[m
+Author: Oguzhan <oguzhanbaysal@outlook.com>
+Date:   Thu Mar 20 18:51:27 2025 +0300
+
+    0.7
+
+[33mcommit e135d77e3c2176b0a0787cf261a57375c67f03a5[m
+Author: Oguzhan <oguzhanbaysal@outlook.com>
+Date:   Thu Mar 20 18:40:34 2025 +0300
+
+    0.6
+
+[33mcommit 72423fdfc6697914611bc0bdd40e18afd132b95b[m
+Author: Oguzhan <oguzhanbaysal@outlook.com>
+Date:   Thu Mar 20 17:54:58 2025 +0300
+
+    0.5
+
+[33mcommit b89aad48cf1cee81b8b6918f0b49423d486d0d09[m
+Author: Oguzhan <oguzhanbaysal@outlook.com>
+Date:   Thu Mar 20 17:50:52 2025 +0300
+
+    currency api
+
+[33mcommit 16027f537c5a986192858f2073bffa6687855822[m
+Author: Oguzhan <oguzhanbaysal@outlook.com>
+Date:   Thu Mar 20 16:37:56 2025 +0300
+
+    0.4
+
+[33mcommit 4cfeaf1d99801e7f5f4f5d8f8bd948b8f09ba385[m
+Author: Oguzhan <oguzhanbaysal@outlook.com>
+Date:   Thu Mar 20 15:12:20 2025 +0300
+
+    kitap ekleme
+
+[33mcommit 08f70719eef206250cde92128ac2e39db1a348d0[m
+Author: Oguzhan <oguzhanbaysal@outlook.com>
+Date:   Thu Mar 20 14:59:29 2025 +0300
+
+    auth
+
+[33mcommit 7110a3c1ed90c3a9c0f0518f5d5f952799ec81c6[m
+Author: Oguzhan <oguzhanbaysal@outlook.com>
+Date:   Thu Mar 20 14:27:18 2025 +0300
+
+    inceleme ve yorumlar
+
+[33mcommit 46582879ee2983920a89f5e6c0ed259c1c7c9937[m
+Author: Oguzhan <oguzhanbaysal@outlook.com>
+Date:   Thu Mar 20 13:32:13 2025 +0300
+
+    0.3
+
+[33mcommit dfecbd72b0e3e7723983ce769da576142947eb33[m
+Author: Oguzhan <oguzhanbaysal@outlook.com>
+Date:   Wed Mar 19 21:37:08 2025 +0300
+
+    0.2
+
+[33mcommit fa5ca68497dd5166471834d82dab4abda52ce6cb[m
+Author: Oguzhan <oguzhanbaysal@outlook.com>
+Date:   Wed Mar 19 20:47:59 2025 +0300
+
+    0.1
+
+[33mcommit c8b7db4870790c7eb0c6ec36f5029feaf16b4ab6[m
+Author: Oguzhan <oguzhanbaysal@outlook.com>
+Date:   Wed Mar 19 20:34:18 2025 +0300
+
+    zero to hero
+
+[33mcommit 3af28bbffb8e3f7b5c05c9ada55c1d553f891d5a[m
+Author: Oguzhan <oguzhanbaysal@outlook.com>
+Date:   Wed Mar 19 18:20:08 2025 +0300
+
+    feat: Initial commit
