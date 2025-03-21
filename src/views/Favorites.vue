@@ -10,7 +10,7 @@ const router = useRouter();
 const loading = ref(false);
 const error = ref('');
 
-const user = computed(() => store.state.user.currentUser);
+const user = computed(() => store.state.auth.user);
 const favorites = computed(() => store.getters['favorites/favoriteBooks']);
 const hasFavorites = computed(() => favorites.value.length > 0);
 

@@ -3,8 +3,10 @@ import { onMounted } from 'vue';
 import { useStore } from '@/store';
 import { RouterView } from 'vue-router';
 import Header from '@/components/layout/Header.vue';
+import { useTheme } from '@/composables/useTheme'
 
 const store = useStore();
+const { initTheme, watchSystemTheme } = useTheme()
 
 onMounted(async () => {
   // Auth durumunu kontrol et
@@ -17,8 +19,9 @@ onMounted(async () => {
   await store.dispatch('currency/fetchRates');
   store.dispatch('currency/startAutoUpdate');
   
-  // Tema durumunu kontrol et
-  store.dispatch('ui/initializeTheme');
+  // Tema ayarlarını başlat
+  initTheme()
+  watchSystemTheme()
 });
 </script>
 
@@ -74,29 +77,39 @@ onMounted(async () => {
 
 :root.dark {
   // Ana renkler
-  --color-primary: #90caf9;
-  --color-primary-dark: #42a5f5;
-  --color-primary-light: #e3f2fd;
-  --color-secondary: #ce93d8;
-  --color-success: #66bb6a;
-  --color-error: #f44336;
-  --color-warning: #ffa726;
-  --color-info: #29b6f6;
+  --color-primary: #1d4ed8;
+  --color-primary-dark: #1e40af;
+  --color-primary-light: #3b82f6;
+  --color-secondary: #4b5563;
+  --color-success: #059669;
+  --color-error: #dc2626;
+  --color-warning: #d97706;
+  --color-info: #0284c7;
 
   // Metin renkleri
   --color-text: #e2e8f0;
-  --color-text-light: #94a3b8;
-  --color-heading: #f8fafc;
-  --color-link: var(--color-primary);
+  --color-text-light: #cbd5e1;
+  --color-heading: #f1f5f9;
+  --color-link: #60a5fa;
 
   // Arkaplan renkleri
-  --color-background: #0f172a;
-  --color-background-soft: #1e293b;
-  --color-background-mute: #334155;
+  --color-background: #030712;
+  --color-background-soft: #0f1629;
+  --color-background-mute: #1f2937;
 
   // Kenarlık renkleri
-  --color-border: #334155;
-  --color-border-hover: #475569;
+  --color-border: #1f2937;
+  --color-border-hover: #374151;
+
+  // Form ve UI elementleri
+  --color-input-bg: #1f2937;
+  --color-dropdown-bg: #1f2937;
+  --color-modal-bg: #1f2937;
+  --color-tooltip-bg: #1f2937;
+  --color-hover-bg: #374151;
+  --color-active-bg: #4b5563;
+  --color-disabled-bg: #1f2937;
+  --color-placeholder: #94a3b8;
 }
 
 * {

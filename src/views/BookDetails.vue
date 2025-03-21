@@ -27,7 +27,7 @@ const isInFavorites = computed(() =>
 const averageRating = computed(() => 
   store.getters['comments/averageRating'](bookId.value)
 );
-const user = computed(() => store.state.user.currentUser);
+const user = computed(() => store.state.auth.user);
 
 // Comment form
 const commentText = ref('');

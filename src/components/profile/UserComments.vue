@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useStore } from 'vuex'
-import { formatDistanceToNow } from 'date-fns'
+import { format } from 'date-fns'
 import { tr } from 'date-fns/locale'
 
 interface Comment {
@@ -76,10 +76,7 @@ const handleDeleteComment = async (commentId: string) => {
 }
 
 const formatDate = (date: string) => {
-  return formatDistanceToNow(new Date(date), { 
-    addSuffix: true,
-    locale: tr 
-  })
+  return format(new Date(date), 'dd MMMM yyyy')
 }
 
 const getRatingStars = (rating: number) => {
@@ -98,7 +95,7 @@ onMounted(loadComments)
         <select 
           v-model="selectedSort"
           class="sort-select"
-          @change="handleSort($event.target.value)"
+          @change="handleSort((($event.target as HTMLSelectElement).value))"
         >
           <option 
             v-for="option in sortOptions"

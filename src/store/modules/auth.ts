@@ -76,15 +76,15 @@ const TOKEN_DURATION = {
   REFRESH: 7 * 24 * 60 * 60 * 1000 // 7 gün
 }
 
-const state = (): AuthState => ({
-  user: secureStorage.getItem(STORAGE_KEYS.USER),
-  token: secureStorage.getItem(STORAGE_KEYS.TOKEN),
-  refreshToken: secureStorage.getItem(STORAGE_KEYS.REFRESH_TOKEN),
-  tokenExpiresAt: secureStorage.getItem(STORAGE_KEYS.TOKEN_EXPIRY) || 0,
+const state: AuthState = {
+  user: null,
+  token: null,
+  refreshToken: null,
+  tokenExpiresAt: 0,
   loading: false,
   error: null,
-  csrfToken: secureStorage.getItem(STORAGE_KEYS.CSRF_TOKEN)
-})
+  csrfToken: null
+}
 
 const getters = {
   isAuthenticated: (state: AuthState) => !!state.token,
@@ -96,56 +96,73 @@ const getters = {
 }
 
 const mutations = {
-  setUser(state: AuthState, user: User | null) {
+  SET_USER(state: AuthState, user: User | null) {
     state.user = user
     secureStorage.setItem(STORAGE_KEYS.USER, user)
   },
   
-  setToken(state: AuthState, tokenData: TokenData | null) {
-    if (tokenData) {
-      state.token = tokenData.token
-      state.refreshToken = tokenData.refreshToken
-      state.tokenExpiresAt = tokenData.expiresAt
-      secureStorage.setItem(STORAGE_KEYS.TOKEN, tokenData.token)
-      secureStorage.setItem(STORAGE_KEYS.REFRESH_TOKEN, tokenData.refreshToken)
-      secureStorage.setItem(STORAGE_KEYS.TOKEN_EXPIRY, tokenData.expiresAt)
+  SET_TOKEN(state: AuthState, token: string | null) {
+    state.token = token
+    if (token) {
+      secureStorage.setItem(STORAGE_KEYS.TOKEN, token)
     } else {
-      state.token = null
-      state.refreshToken = null
-      state.tokenExpiresAt = 0
-      Object.values(STORAGE_KEYS).forEach(key => secureStorage.removeItem(key))
+      secureStorage.removeItem(STORAGE_KEYS.TOKEN)
     }
   },
   
-  setLoading(state: AuthState, loading: boolean) {
+  SET_REFRESH_TOKEN(state: AuthState, token: string | null) {
+    state.refreshToken = token
+    if (token) {
+      secureStorage.setItem(STORAGE_KEYS.REFRESH_TOKEN, token)
+    } else {
+      secureStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN)
+    }
+  },
+  
+  SET_TOKEN_EXPIRES_AT(state: AuthState, timestamp: number) {
+    state.tokenExpiresAt = timestamp
+    secureStorage.setItem(STORAGE_KEYS.TOKEN_EXPIRY, timestamp)
+  },
+  
+  SET_LOADING(state: AuthState, loading: boolean) {
     state.loading = loading
   },
   
-  setError(state: AuthState, error: string | null) {
+  SET_ERROR(state: AuthState, error: string | null) {
     state.error = error
   },
   
-  setCSRFToken(state: AuthState, token: string | null) {
+  SET_CSRF_TOKEN(state: AuthState, token: string | null) {
     state.csrfToken = token
     if (token) {
       secureStorage.setItem(STORAGE_KEYS.CSRF_TOKEN, token)
     } else {
       secureStorage.removeItem(STORAGE_KEYS.CSRF_TOKEN)
     }
+  },
+  
+  CLEAR_AUTH(state: AuthState) {
+    state.user = null
+    state.token = null
+    state.refreshToken = null
+    state.tokenExpiresAt = 0
+    state.error = null
+    state.csrfToken = null
+    Object.values(STORAGE_KEYS).forEach(key => secureStorage.removeItem(key))
   }
 }
 
 const actions = {
   async login({ commit }: { commit: Commit }, credentials: LoginCredentials) {
-    commit('setLoading', true)
-    commit('setError', null)
+    commit('SET_LOADING', true)
+    commit('SET_ERROR', null)
     
     // Rate limiting kontrolü
     const key = `login_${credentials.email}`
     if (loginRateLimiter.isBlocked(key)) {
       const remainingTime = Math.ceil(loginRateLimiter.getBlockTimeRemaining(key) / 1000)
-      commit('setError', `Çok fazla başarısız deneme. Lütfen ${remainingTime} saniye sonra tekrar deneyin.`)
-      commit('setLoading', false)
+      commit('SET_ERROR', `Çok fazla başarısız deneme. Lütfen ${remainingTime} saniye sonra tekrar deneyin.`)
+      commit('SET_LOADING', false)
       return { success: false }
     }
     
@@ -167,10 +184,12 @@ const actions = {
 
       // CSRF token oluştur
       const csrfToken = generateCSRFToken()
-      commit('setCSRFToken', csrfToken)
+      commit('SET_CSRF_TOKEN', csrfToken)
       
-      commit('setUser', userRecord.user)
-      commit('setToken', tokenData)
+      commit('SET_USER', userRecord.user)
+      commit('SET_TOKEN', tokenData.token)
+      commit('SET_REFRESH_TOKEN', tokenData.refreshToken)
+      commit('SET_TOKEN_EXPIRES_AT', tokenData.expiresAt)
       
       // Başarılı giriş - rate limiter sıfırla
       loginRateLimiter.reset(key)
@@ -185,28 +204,28 @@ const actions = {
         ? `Giriş başarısız. ${remainingAttempts} deneme hakkınız kaldı.`
         : 'Çok fazla başarısız deneme. Hesabınız geçici olarak bloke edildi.'
       
-      commit('setError', errorMessage)
+      commit('SET_ERROR', errorMessage)
       return { success: false, error }
     } finally {
-      commit('setLoading', false)
+      commit('SET_LOADING', false)
     }
   },
 
   async register({ commit }: { commit: Commit }, credentials: RegisterCredentials) {
-    commit('setLoading', true)
-    commit('setError', null)
+    commit('SET_LOADING', true)
+    commit('SET_ERROR', null)
 
     try {
-      // API çağrısı simülasyonu
       await new Promise(resolve => setTimeout(resolve, 1000))
       
-      // Şifreyi hash'le
       const hashedPassword = hashPassword(credentials.password)
       
       const mockUser: User = {
         id: Date.now(),
         name: credentials.name,
-        email: credentials.email
+        email: credentials.email,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
       }
 
       // Mock DB'ye kaydet
@@ -223,28 +242,28 @@ const actions = {
 
       // CSRF token oluştur
       const csrfToken = generateCSRFToken()
-      commit('setCSRFToken', csrfToken)
+      commit('SET_CSRF_TOKEN', csrfToken)
       
-      commit('setUser', mockUser)
-      commit('setToken', tokenData)
+      commit('SET_USER', mockUser)
+      commit('SET_TOKEN', tokenData.token)
+      commit('SET_REFRESH_TOKEN', tokenData.refreshToken)
+      commit('SET_TOKEN_EXPIRES_AT', tokenData.expiresAt)
       router.push('/profile')
     } catch (error) {
-      commit('setError', 'Kayıt başarısız oldu')
+      commit('SET_ERROR', 'Kayıt başarısız oldu')
     } finally {
-      commit('setLoading', false)
+      commit('SET_LOADING', false)
     }
   },
 
   logout({ commit }: { commit: Commit }) {
-    commit('setUser', null)
-    commit('setToken', null)
-    commit('setCSRFToken', null)
+    commit('CLEAR_AUTH')
     router.push('/login')
   },
 
   async checkAuth({ commit, state }: { commit: Commit; state: AuthState }) {
     if (!state.token || state.tokenExpiresAt <= Date.now()) {
-      commit('setToken', null)
+      commit('SET_TOKEN', null)
       return false
     }
 
@@ -256,18 +275,33 @@ const actions = {
           refreshToken: state.refreshToken || 'mock_refresh_' + Date.now(),
           expiresAt: Date.now() + TOKEN_DURATION.ACCESS
         }
-        commit('setToken', tokenData)
+        commit('SET_TOKEN', tokenData.token)
+        commit('SET_REFRESH_TOKEN', tokenData.refreshToken)
+        commit('SET_TOKEN_EXPIRES_AT', tokenData.expiresAt)
         
         // CSRF token'ı da yenile
         const csrfToken = generateCSRFToken()
-        commit('setCSRFToken', csrfToken)
+        commit('SET_CSRF_TOKEN', csrfToken)
       }
       return true
     } catch (error) {
-      commit('setError', 'Token yenileme başarısız oldu')
-      commit('setToken', null)
-      commit('setCSRFToken', null)
+      commit('SET_ERROR', 'Token yenileme başarısız oldu')
+      commit('SET_TOKEN', null)
+      commit('SET_REFRESH_TOKEN', null)
+      commit('SET_TOKEN_EXPIRES_AT', 0)
+      commit('SET_CSRF_TOKEN', null)
       return false
+    }
+  },
+
+  initializeAuth({ commit }: { commit: Commit }) {
+    const auth = localStorage.getItem('auth')
+    if (auth) {
+      const { user, token, refreshToken, tokenExpiresAt } = JSON.parse(auth)
+      commit('SET_USER', user)
+      commit('SET_TOKEN', token)
+      commit('SET_REFRESH_TOKEN', refreshToken)
+      commit('SET_TOKEN_EXPIRES_AT', tokenExpiresAt)
     }
   }
 }

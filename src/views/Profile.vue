@@ -11,7 +11,7 @@ const loading = ref(false);
 const error = ref('');
 const success = ref('');
 
-const user = computed(() => store.state.user.currentUser);
+const user = computed(() => store.state.auth.user);
 const name = ref(user.value?.name || '');
 const email = ref(user.value?.email || '');
 const currentPassword = ref('');

@@ -41,10 +41,10 @@ const loadFavorites = async () => {
   }
 }
 
-const handleSort = (value: string) => {
-  selectedSort.value = value
-  currentPage.value = 1
-  loadFavorites()
+const handleSort = (event: Event) => {
+  const target = event.target as HTMLSelectElement
+  const [field, order] = target.value.split('-')
+  store.dispatch('favorites/setSortOrder', { field, order })
 }
 
 const handlePageChange = (page: number) => {
@@ -82,7 +82,7 @@ onMounted(loadFavorites)
         <select 
           v-model="selectedSort"
           class="sort-select"
-          @change="handleSort($event.target.value)"
+          @change="handleSort($event)"
         >
           <option 
             v-for="option in sortOptions"

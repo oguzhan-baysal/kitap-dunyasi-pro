@@ -51,13 +51,13 @@ const handlePageChange = (page: number) => {
   loadBooks()
 }
 
-const editBook = (bookId: string) => {
-  router.push(`/books/${bookId}/edit`)
+const editBook = (id: number) => {
+  router.push(`/books/${id}/edit`)
 }
 
-const deleteBook = (bookId: string) => {
+const deleteBook = (id: number) => {
   if (confirm('Bu kitabı silmek istediğinizden emin misiniz?')) {
-    store.dispatch('books/deleteBook', bookId)
+    store.dispatch('books/deleteBook', id)
   }
 }
 
@@ -73,7 +73,7 @@ onMounted(loadBooks)
         <select 
           v-model="selectedSort"
           class="sort-select"
-          @change="handleSort($event.target.value)"
+          @change="handleSort((($event.target as HTMLSelectElement).value))"
         >
           <option 
             v-for="option in sortOptions"

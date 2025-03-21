@@ -2,12 +2,12 @@ import { createStore } from 'vuex'
 import type { RootState } from '@/types'
 
 // Modülleri import et
-import { auth } from './modules/auth'
-import { books } from './modules/books'
-import { currency } from './modules/currency'
-import favorites from './modules/favorites'
-import comments from './modules/comments'
-import ui from './modules/ui'
+import { auth } from '@/store/modules/auth'
+import { books } from '@/store/modules/books'
+import { currency } from '@/store/modules/currency'
+import favorites from '@/store/modules/favorites'
+import comments from '@/store/modules/comments'
+import ui from '@/store/modules/ui'
 
 const store = createStore<RootState>({
   state: {

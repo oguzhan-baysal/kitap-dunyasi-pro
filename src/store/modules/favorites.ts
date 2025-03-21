@@ -1,18 +1,13 @@
 // @ts-ignore
-import { Module, Commit } from 'vuex'
-import { RootState } from '../types'
-import type { Book, FavoritesState } from '../types'
+import type { Module } from 'vuex'
+import type { RootState, FavoritesState, Book } from '@/types'
 
 const STORAGE_KEY = 'kitap-dunyasi-favorites'
 
-const state = (): FavoritesState => {
-  // LocalStorage'dan favorileri al
-  const savedFavorites = localStorage.getItem(STORAGE_KEY)
-  return {
-    favorites: savedFavorites ? JSON.parse(savedFavorites) : [],
-    loading: false,
-    error: null
-  }
+const state: FavoritesState = {
+  favorites: [],
+  loading: false,
+  error: null
 }
 
 const getters = {
@@ -25,61 +20,67 @@ const getters = {
 }
 
 const mutations = {
-  setFavorites(state: FavoritesState, favorites: Book[]) {
+  SET_FAVORITES(state: FavoritesState, favorites: Book[]) {
     state.favorites = favorites
-    // LocalStorage'a kaydet
     localStorage.setItem(STORAGE_KEY, JSON.stringify(favorites))
   },
-  addFavorite(state: FavoritesState, book: Book) {
+  ADD_FAVORITE(state: FavoritesState, book: Book) {
     state.favorites.push(book)
-    // LocalStorage'a kaydet
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state.favorites))
   },
-  removeFavorite(state: FavoritesState, bookId: number) {
+  REMOVE_FAVORITE(state: FavoritesState, bookId: number) {
     state.favorites = state.favorites.filter(book => book.id !== bookId)
-    // LocalStorage'a kaydet
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state.favorites))
   },
-  setLoading(state: FavoritesState, loading: boolean) {
+  SET_LOADING(state: FavoritesState, loading: boolean) {
     state.loading = loading
   },
-  setError(state: FavoritesState, error: string | null) {
+  SET_ERROR(state: FavoritesState, error: string | null) {
     state.error = error
   }
 }
 
 const actions = {
-  async initFavorites({ commit }: { commit: Commit }) {
+  async loadFavorites({ commit }: { commit: any }) {
+    commit('SET_LOADING', true)
     try {
-      commit('setLoading', true)
-      const savedFavorites = localStorage.getItem(STORAGE_KEY)
-      if (savedFavorites) {
-        commit('setFavorites', JSON.parse(savedFavorites))
+      const storedFavorites = localStorage.getItem(STORAGE_KEY)
+      if (storedFavorites) {
+        commit('SET_FAVORITES', JSON.parse(storedFavorites))
       }
-      commit('setError', null)
     } catch (error) {
-      commit('setError', 'Favoriler yüklenirken bir hata oluştu')
+      commit('SET_ERROR', 'Favoriler yüklenirken bir hata oluştu')
     } finally {
-      commit('setLoading', false)
+      commit('SET_LOADING', false)
     }
   },
 
-  async toggleFavorite({ commit, state }: { commit: Commit, state: FavoritesState }, book: Book) {
+  async addToFavorites({ commit, state }: { commit: any, state: FavoritesState }, book: Book) {
     try {
-      commit('setLoading', true)
-      const isFavorite = state.favorites.some(f => f.id === book.id)
-      
-      if (isFavorite) {
-        commit('removeFavorite', book.id)
-      } else {
-        commit('addFavorite', book)
-      }
-      
-      commit('setError', null)
+      const favorites = [...state.favorites, { ...book, isFavorite: true }]
+      commit('SET_FAVORITES', favorites)
     } catch (error) {
-      commit('setError', 'Favori işlemi sırasında bir hata oluştu')
-    } finally {
-      commit('setLoading', false)
+      commit('SET_ERROR', 'Kitap favorilere eklenirken bir hata oluştu')
+    }
+  },
+
+  async removeFromFavorites({ commit, state }: { commit: any, state: FavoritesState }, bookId: number) {
+    try {
+      const favorites = state.favorites.filter((book: Book) => book.id !== bookId)
+      commit('SET_FAVORITES', favorites)
+    } catch (error) {
+      commit('SET_ERROR', 'Kitap favorilerden çıkarılırken bir hata oluştu')
+    }
+  },
+
+  async toggleFavorite({ dispatch, getters, rootState }: { dispatch: any, getters: any, rootState: RootState }, bookId: number) {
+    if (getters.isFavorite(bookId)) {
+      await dispatch('removeFromFavorites', bookId)
+    } else {
+      const book = rootState.books.books.find((b: Book) => b.id === bookId)
+      if (book) {
+        await dispatch('addToFavorites', book)
+      }
     }
   }
 }

@@ -4,7 +4,7 @@ export interface RootState {
   books: BooksState
   currency: CurrencyState
   favorites: FavoritesState
-  comments: any // TODO: Add CommentsState interface
+  comments: CommentsState
   ui: UIState
 }
 
@@ -15,12 +15,15 @@ export interface AuthState {
   tokenExpiresAt: number
   loading: boolean
   error: string | null
+  csrfToken: string | null
 }
 
 export interface User {
   id: number
   name: string
   email: string
+  createdAt: string
+  updatedAt: string
 }
 
 export interface CurrencyState {
@@ -29,7 +32,7 @@ export interface CurrencyState {
   selectedCurrency: string
   loading: boolean
   error: string | null
-  lastUpdate: number | null
+  lastUpdate: string | null
 }
 
 export interface FavoritesState {
@@ -48,9 +51,33 @@ export interface Book {
   author: string
   description: string
   price: number
-  category: string
-  imageUrl: string
   rating: number
+  publishDate?: string
+  coverImage: string
+  category?: string
+  language?: string
+  pageCount?: number
+  publishYear?: number
+  publisher?: string
+  isbn?: string
+  isFavorite?: boolean
+  isFree: boolean
+}
+
+export interface Comment {
+  id: number
+  bookId: number
+  userId: number
+  text: string
+  rating: number
+  createdAt: string
+  updatedAt: string
+}
+
+export interface CommentsState {
+  comments: Comment[]
+  loading: boolean
+  error: string | null
 }
 
 export interface BookFilters {

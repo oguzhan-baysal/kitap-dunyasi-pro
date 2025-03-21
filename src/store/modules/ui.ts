@@ -1,54 +1,35 @@
-import { Module, Commit } from 'vuex'
-import { RootState } from '../types'
+import type { Module } from 'vuex'
+import type { RootState, UIState } from '@/types'
 
-export interface UIState {
-  theme: 'light' | 'dark'
-}
-
-const state = (): UIState => ({
+const state: UIState = {
   theme: 'light'
-})
-
-const getters = {
-  currentTheme: (state: UIState) => state.theme,
-  isDarkTheme: (state: UIState) => state.theme === 'dark'
-}
-
-const mutations = {
-  setTheme(state: UIState, theme: 'light' | 'dark') {
-    state.theme = theme
-    // Tema değiştiğinde localStorage'a kaydet
-    localStorage.setItem('theme', theme)
-    // HTML elementine tema class'ını ekle
-    document.documentElement.classList.remove('light', 'dark')
-    document.documentElement.classList.add(theme)
-  }
-}
-
-const actions = {
-  initializeTheme({ commit }: { commit: Commit }) {
-    // Sayfa yüklendiğinde localStorage'dan temayı al
-    const savedTheme = localStorage.getItem('theme') as 'light' | 'dark'
-    if (savedTheme) {
-      commit('setTheme', savedTheme)
-    } else {
-      // Sistem temasını kontrol et
-      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
-      commit('setTheme', prefersDark ? 'dark' : 'light')
-    }
-  },
-  toggleTheme({ commit, state }: { commit: Commit, state: UIState }) {
-    const newTheme = state.theme === 'light' ? 'dark' : 'light'
-    commit('setTheme', newTheme)
-  }
 }
 
 const ui: Module<UIState, RootState> = {
   namespaced: true,
   state,
-  getters,
-  mutations,
-  actions
+  getters: {
+    currentTheme: (state) => state.theme
+  },
+  mutations: {
+    SET_THEME(state, theme: 'light' | 'dark') {
+      state.theme = theme
+    }
+  },
+  actions: {
+    toggleTheme({ commit, state }) {
+      const newTheme = state.theme === 'light' ? 'dark' : 'light'
+      commit('SET_THEME', newTheme)
+      localStorage.setItem('theme', newTheme)
+      document.documentElement.setAttribute('data-theme', newTheme)
+    },
+    
+    initializeTheme({ commit }) {
+      const savedTheme = localStorage.getItem('theme') as 'light' | 'dark' || 'light'
+      commit('SET_THEME', savedTheme)
+      document.documentElement.setAttribute('data-theme', savedTheme)
+    }
+  }
 }
 
 export default ui 

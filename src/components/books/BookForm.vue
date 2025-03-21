@@ -130,7 +130,7 @@ const handleSubmit = () => {
           <input
             id="title"
             v-model="formData.title"
-            @input="handleInput('title', $event.target.value)"
+            @input="handleInput('title', $event)"
             @blur="handleBlur('title')"
             type="text"
             :class="{ 'error': getFieldError('title') }"
@@ -145,7 +145,7 @@ const handleSubmit = () => {
           <input
             id="author"
             v-model="formData.author"
-            @input="handleInput('author', $event.target.value)"
+            @input="handleInput('author', $event)"
             @blur="handleBlur('author')"
             type="text"
             :class="{ 'error': getFieldError('author') }"
@@ -160,7 +160,7 @@ const handleSubmit = () => {
           <input
             id="price"
             v-model.number="formData.price"
-            @input="handleInput('price', $event.target.value)"
+            @input="handleInput('price', $event)"
             @blur="handleBlur('price')"
             type="number"
             min="0"
@@ -180,7 +180,7 @@ const handleSubmit = () => {
           <textarea
             id="description"
             v-model="formData.description"
-            @input="handleInput('description', $event.target.value)"
+            @input="handleInput('description', $event)"
             @blur="handleBlur('description')"
             :class="{ 'error': getFieldError('description') }"
           ></textarea>

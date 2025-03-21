@@ -21,12 +21,13 @@ const getters = {
   getBaseCurrency: (state: CurrencyState): string => state.baseCurrency,
   isLoading: (state: CurrencyState): boolean => state.loading,
   getError: (state: CurrencyState): string | null => state.error,
-  getLastUpdate: (state: CurrencyState): number | null => state.lastUpdate
+  getLastUpdate: (state: CurrencyState): string | null => state.lastUpdate
 }
 
 const mutations = {
-  SET_RATES(state: CurrencyState, rates: ExchangeRates) {
+  UPDATE_RATES(state: CurrencyState, { rates, timestamp }: { rates: Record<string, number>, timestamp: string }) {
     state.rates = rates
+    state.lastUpdate = timestamp
   },
   SET_SELECTED_CURRENCY(state: CurrencyState, currency: string) {
     state.selectedCurrency = currency
@@ -37,7 +38,7 @@ const mutations = {
   SET_ERROR(state: CurrencyState, error: string | null) {
     state.error = error
   },
-  SET_LAST_UPDATE(state: CurrencyState, timestamp: number) {
+  SET_LAST_UPDATE(state: CurrencyState, timestamp: string) {
     state.lastUpdate = timestamp
   }
 }
@@ -48,8 +49,7 @@ const actions = {
       // Önce cache'i kontrol et
       const cached = currencyService.getRatesFromCache()
       if (cached && currencyService.isCacheValid(cached.timestamp)) {
-        commit('SET_RATES', cached.rates)
-        commit('SET_LAST_UPDATE', cached.timestamp)
+        commit('UPDATE_RATES', { rates: cached.rates, timestamp: cached.timestamp })
         return
       }
 
@@ -59,8 +59,7 @@ const actions = {
       const rates = await currencyService.fetchRates(state.baseCurrency)
       
       // Kurları güncelle ve cache'e kaydet
-      commit('SET_RATES', rates)
-      commit('SET_LAST_UPDATE', new Date().getTime())
+      commit('UPDATE_RATES', { rates: rates, timestamp: new Date().getTime().toString() })
       currencyService.saveRatesToCache(rates)
     } catch (error) {
       console.error('Currency fetch error:', error)
@@ -68,8 +67,7 @@ const actions = {
       // Offline durumda cache'den al
       const cached = currencyService.getRatesFromCache()
       if (cached) {
-        commit('SET_RATES', cached.rates)
-        commit('SET_LAST_UPDATE', cached.timestamp)
+        commit('UPDATE_RATES', { rates: cached.rates, timestamp: cached.timestamp })
         commit('SET_ERROR', 'Çevrimdışı mod: Son bilinen kurlar kullanılıyor')
       } else {
         commit('SET_ERROR', 'Döviz kurları yüklenirken bir hata oluştu')

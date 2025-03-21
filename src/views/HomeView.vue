@@ -25,9 +25,10 @@ const sortOptions = [
 const currentSort = computed(() => store.state.books.sort)
 
 const updateSort = (field: string) => {
-  const currentOrder = currentSort.field === field ? currentSort.order : null
-  const newOrder = !currentOrder || currentOrder === 'desc' ? 'asc' : 'desc'
-  store.commit('books/UPDATE_SORT', { field, order: newOrder })
+  const order = currentSort.value.field === field ? 
+    (currentSort.value.order === 'desc' ? 'asc' : 'desc') : 
+    'asc'
+  store.commit('books/UPDATE_SORT', { field, order })
 }
 
 const loadMore = async () => {
@@ -78,6 +79,9 @@ onMounted(async () => {
               @click="updateSort(option.field)"
             >
               {{ option.label }}
+              <span class="sort-indicator" v-if="currentSort.field === option.field">
+                {{ currentSort.order === 'asc' ? '↑' : '↓' }}
+              </span>
             </button>
             <div class="view-controls">
               <CurrencySelector />
@@ -207,47 +211,47 @@ onMounted(async () => {
         padding: $spacing-2 $spacing-4;
         border: 1px solid var(--color-border);
         border-radius: $border-radius;
-        background: var(--color-background-soft);
-        color: var(--color-text);
+        background: #ffffff;
+        color: #000000;
         cursor: pointer;
-        transition: all 0.2s;
+        transition: none;
         font-size: $font-size-sm;
         height: 36px;
         min-width: fit-content;
         
         &:hover {
-          background: var(--color-background-mute);
+          background: #ffffff !important;
+          border-color: var(--color-border);
         }
         
         &.active {
-          background: var(--color-primary);
-          color: white;
-          border-color: var(--color-primary);
+          background: var(--color-primary) !important;
+          color: #ffffff;
+        }
+
+        .sort-indicator {
+          margin-left: $spacing-1;
         }
       }
     }
 
     .view-toggle {
       padding: $spacing-2 $spacing-4;
-      background: var(--color-background-soft);
+      background: #ffffff;
       border: 1px solid var(--color-border);
       border-radius: $border-radius;
-      color: var(--color-text);
+      color: #000000;
       font-size: $font-size-sm;
       cursor: pointer;
-      transition: all 0.2s;
+      transition: none;
       min-width: 140px;
       height: 36px;
       margin-left: auto;
 
       &:hover {
-        background: var(--color-background-mute);
-        border-color: var(--color-border-hover);
+        background: #ffffff !important;
+        border-color: var(--color-border);
         color: var(--color-primary);
-      }
-
-      &:active {
-        transform: translateY(1px);
       }
     }
   }
@@ -361,13 +365,13 @@ onMounted(async () => {
   align-items: center;
   gap: $spacing-2;
   padding: $spacing-2 $spacing-4;
-  background: var(--color-background-soft);
+  background: #ffffff;
   border: 1px solid var(--color-border);
   border-radius: $border-radius;
-  color: var(--color-text);
+  color: #000000;
   font-size: $font-size-sm;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: none;
   height: 36px;
 
   i {
@@ -375,8 +379,8 @@ onMounted(async () => {
   }
 
   &:hover {
-    background: var(--color-background-mute);
-    border-color: var(--color-border-hover);
+    background: #ffffff !important;
+    border-color: var(--color-border);
     color: var(--color-primary);
   }
 
@@ -398,5 +402,113 @@ onMounted(async () => {
 .slide-leave-to {
   opacity: 0;
   transform: translateY(-20px);
+}
+
+.filter-button,
+.sort-button {
+  background-color: var(--color-background-soft);
+  color: var(--button-text-color);
+  border: 1px solid var(--color-border);
+  padding: 0.5rem 1rem;
+  border-radius: 0.375rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background-color: inherit;
+    border-color: inherit;
+  }
+
+  &.active {
+    background-color: var(--color-active-bg);
+    color: var(--button-text-color);
+  }
+}
+
+.filter-label,
+.sort-label {
+  color: var(--filter-text-color);
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+}
+
+select,
+input {
+  background-color: var(--color-input-bg);
+  color: var(--input-text-color);
+  border: 1px solid var(--color-border);
+  padding: 0.5rem;
+  border-radius: 0.375rem;
+  width: 100%;
+
+  &::placeholder {
+    color: var(--input-placeholder-color);
+  }
+
+  &:focus {
+    outline: none;
+    border-color: var(--color-primary);
+  }
+}
+
+[data-theme="dark"] {
+  .filter-buttons button,
+  .filter-toggle,
+  .view-toggle {
+    background: #ffffff !important;
+    color: #000000;
+    border: 1px solid #e5e7eb;
+    
+    &:hover {
+      background: #ffffff !important;
+      border-color: #e5e7eb;
+    }
+    
+    &.active {
+      background: var(--color-primary) !important;
+      color: #ffffff;
+      border-color: var(--color-primary);
+    }
+  }
+}
+
+.filter-buttons {
+  button {
+    background: #ffffff;
+    color: #000000;
+    border: 1px solid var(--color-border);
+    transition: none;
+    
+    &:hover {
+      background: #ffffff !important;
+      border-color: var(--color-border);
+    }
+    
+    &.active {
+      background: var(--color-primary) !important;
+      color: #ffffff;
+      border-color: var(--color-primary);
+    }
+  }
+}
+
+.filter-button,
+.sort-button,
+.view-toggle,
+.filter-toggle {
+  transition: none !important;
+  
+  &:hover {
+    background: inherit !important;
+    border-color: inherit !important;
+    transform: none !important;
+  }
+}
+
+button {
+  &:hover {
+    background: inherit !important;
+    border-color: inherit !important;
+  }
 }
 </style> 
