@@ -1,12 +1,11 @@
 export interface RootState {
   version: string
-  auth: {
-    user: {
-      id: number
-      email: string
-      name: string
-    } | null
-  }
+  auth: AuthState
+  books: BooksState
+  currency: CurrencyState
+  favorites: FavoritesState
+  comments: any // TODO: Add CommentsState interface
+  ui: UIState
 }
 
 export interface AuthState {
