@@ -30,11 +30,6 @@ const updateSort = (field: string) => {
   store.commit('books/UPDATE_SORT', { field, order: newOrder })
 }
 
-const getSortIcon = (field: string) => {
-  if (currentSort.field !== field) return 'fas fa-sort'
-  return currentSort.order === 'asc' ? 'fas fa-sort-up' : 'fas fa-sort-down'
-}
-
 const loadMore = async () => {
   if (hasMore.value && !loading.value) {
     await store.dispatch('books/loadMoreBooks')
@@ -83,7 +78,6 @@ onMounted(async () => {
               @click="updateSort(option.field)"
             >
               {{ option.label }}
-              <i :class="getSortIcon(option.field)"></i>
             </button>
             <div class="view-controls">
               <CurrencySelector />
@@ -219,6 +213,7 @@ onMounted(async () => {
         transition: all 0.2s;
         font-size: $font-size-sm;
         height: 36px;
+        min-width: fit-content;
         
         &:hover {
           background: var(--color-background-mute);
