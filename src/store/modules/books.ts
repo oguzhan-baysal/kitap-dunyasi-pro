@@ -10,6 +10,10 @@ export interface Book {
   price: number
   coverImage: string
   category: string
+  language: string
+  pageCount: number
+  publishYear: number
+  isFree: boolean
   userId: number
   isFavorite: boolean
   rating?: number
@@ -27,9 +31,16 @@ export interface BooksState {
   loading: boolean
   error: string | null
   filters: {
+    search: string | null
     category: string | null
+    language: string | null
     minPrice: number | null
     maxPrice: number | null
+    minYear: number | null
+    maxYear: number | null
+    minPages: number | null
+    maxPages: number | null
+    isFree: boolean | null
     rating: number | null
   }
   sort: {
@@ -56,9 +67,16 @@ const state = (): BooksState => ({
   loading: false,
   error: null,
   filters: {
+    search: null,
     category: null,
+    language: null,
     minPrice: null,
     maxPrice: null,
+    minYear: null,
+    maxYear: null,
+    minPages: null,
+    maxPages: null,
+    isFree: null,
     rating: null
   },
   sort: {
@@ -83,17 +101,53 @@ const getters = {
   getFilteredAndSortedBooks: (state: BooksState): Book[] => {
     let filteredBooks = [...state.books]
 
-    // Filtreleme işlemleri
+    // Arama filtresi
+    if (state.filters.search) {
+      const searchTerm = state.filters.search.toLowerCase()
+      filteredBooks = filteredBooks.filter(book => 
+        book.title.toLowerCase().includes(searchTerm) ||
+        book.author.toLowerCase().includes(searchTerm) ||
+        book.description.toLowerCase().includes(searchTerm)
+      )
+    }
+
+    // Kategori filtresi
     if (state.filters.category) {
       filteredBooks = filteredBooks.filter(book => book.category === state.filters.category)
     }
 
+    // Dil filtresi
+    if (state.filters.language) {
+      filteredBooks = filteredBooks.filter(book => book.language === state.filters.language)
+    }
+
+    // Fiyat filtresi
     if (state.filters.minPrice !== null) {
       filteredBooks = filteredBooks.filter(book => book.price >= state.filters.minPrice!)
     }
-
     if (state.filters.maxPrice !== null) {
       filteredBooks = filteredBooks.filter(book => book.price <= state.filters.maxPrice!)
+    }
+
+    // Yıl filtresi
+    if (state.filters.minYear !== null) {
+      filteredBooks = filteredBooks.filter(book => book.publishYear >= state.filters.minYear!)
+    }
+    if (state.filters.maxYear !== null) {
+      filteredBooks = filteredBooks.filter(book => book.publishYear <= state.filters.maxYear!)
+    }
+
+    // Sayfa sayısı filtresi
+    if (state.filters.minPages !== null) {
+      filteredBooks = filteredBooks.filter(book => book.pageCount >= state.filters.minPages!)
+    }
+    if (state.filters.maxPages !== null) {
+      filteredBooks = filteredBooks.filter(book => book.pageCount <= state.filters.maxPages!)
+    }
+
+    // Ücretsiz/Ücretli filtresi
+    if (state.filters.isFree !== null) {
+      filteredBooks = filteredBooks.filter(book => book.isFree === state.filters.isFree)
     }
 
     // Sıralama işlemi
@@ -108,6 +162,10 @@ const getters = {
           return (a.price - b.price) * order
         case 'rating':
           return ((a.rating || 0) - (b.rating || 0)) * order
+        case 'publishYear':
+          return (a.publishYear - b.publishYear) * order
+        case 'pageCount':
+          return (a.pageCount - b.pageCount) * order
         case 'publishDate':
           if (!a.publishDate || !b.publishDate) return 0
           return (new Date(a.publishDate).getTime() - new Date(b.publishDate).getTime()) * order
@@ -202,6 +260,22 @@ const mutations = {
   },
   setHasMore(state: BooksState, hasMore: boolean) {
     state.hasMore = hasMore
+  },
+  SET_FILTERS(state: BooksState, filters: typeof state.filters) {
+    state.filters = {
+      ...state.filters,
+      search: filters.search || null,
+      category: filters.category || null,
+      language: filters.language || null,
+      minPrice: filters.minPrice ? Number(filters.minPrice) : null,
+      maxPrice: filters.maxPrice ? Number(filters.maxPrice) : null,
+      minYear: filters.minYear ? Number(filters.minYear) : null,
+      maxYear: filters.maxYear ? Number(filters.maxYear) : null,
+      minPages: filters.minPages ? Number(filters.minPages) : null,
+      maxPages: filters.maxPages ? Number(filters.maxPages) : null,
+      isFree: filters.isFree,
+      rating: filters.rating
+    }
   }
 }
 
@@ -219,6 +293,7 @@ const actions = {
       const response = await new Promise<Book[]>((resolve) => {
         setTimeout(() => {
           const categories = ['Roman', 'Bilim Kurgu', 'Fantastik', 'Kişisel Gelişim', 'Tarih']
+          const languages = ['Türkçe', 'İngilizce', 'Almanca', 'Fransızca']
           const mockBooks: Book[] = Array.from({ length: state.itemsPerPage }, (_, index) => ({
             id: state.books.length + index + 1,
             title: `Kitap ${state.books.length + index + 1}`,
@@ -229,7 +304,11 @@ const actions = {
             rating: (Math.floor(Math.random() * 10) + 35) / 10,
             publishDate: new Date().toISOString(),
             category: categories[Math.floor(Math.random() * categories.length)],
-            userId: 999, // Sabit bir ID kullanıyoruz (sistem kitapları için)
+            language: languages[Math.floor(Math.random() * languages.length)],
+            pageCount: Math.floor(Math.random() * 500) + 100,
+            publishYear: Math.floor(Math.random() * 30) + 1990,
+            isFree: Math.random() > 0.9,
+            userId: 999,
             isFavorite: false
           }))
           resolve(mockBooks)

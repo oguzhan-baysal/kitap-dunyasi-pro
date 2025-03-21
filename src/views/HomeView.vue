@@ -7,8 +7,10 @@ import BookListItem from '@/components/books/BookListItem.vue'
 import CurrencySelector from '@/components/ui/CurrencySelector.vue'
 import { useInfiniteScroll } from '@/composables/useInfiniteScroll'
 import { useViewMode } from '@/composables/useViewMode'
+import BookFilter from '@/components/books/BookFilter.vue'
 
 const store = useStore()
+const showFilters = ref(false)
 const books = computed(() => store.getters['books/getFilteredAndSortedBooks'])
 const loading = computed(() => store.state.books.loading)
 const hasMore = computed(() => store.state.books.hasMore)
@@ -42,6 +44,14 @@ const loadMore = async () => {
 const { isLoading } = useInfiniteScroll(loadMore)
 const { viewMode, toggleViewMode } = useViewMode()
 
+const toggleFilters = () => {
+  showFilters.value = !showFilters.value
+}
+
+const handleFilter = (filters: any) => {
+  store.commit('books/SET_FILTERS', filters)
+}
+
 onMounted(async () => {
   await store.dispatch('books/initialize')
 })
@@ -59,6 +69,13 @@ onMounted(async () => {
         <div class="header-left">
           <h2>Kitaplar</h2>
           <div class="filter-buttons">
+            <button 
+              class="filter-toggle"
+              @click="toggleFilters"
+            >
+              <i class="fas fa-filter"></i>
+              {{ showFilters ? 'Filtreleri Gizle' : 'Filtreleri Göster' }}
+            </button>
             <button 
               v-for="option in sortOptions"
               :key="option.field"
@@ -80,6 +97,13 @@ onMounted(async () => {
           </div>
         </div>
       </div>
+
+      <Transition name="slide">
+        <BookFilter
+          v-if="showFilters"
+          @filter="handleFilter"
+        />
+      </Transition>
 
       <div 
         class="books-container"
@@ -335,5 +359,49 @@ onMounted(async () => {
   .books-container.grid {
     grid-template-columns: 1fr;
   }
+}
+
+.filter-toggle {
+  display: flex;
+  align-items: center;
+  gap: $spacing-2;
+  padding: $spacing-2 $spacing-4;
+  background: var(--color-background-soft);
+  border: 1px solid var(--color-border);
+  border-radius: $border-radius;
+  color: var(--color-text);
+  font-size: $font-size-sm;
+  cursor: pointer;
+  transition: all 0.2s;
+  height: 36px;
+
+  i {
+    font-size: 0.9em;
+  }
+
+  &:hover {
+    background: var(--color-background-mute);
+    border-color: var(--color-border-hover);
+    color: var(--color-primary);
+  }
+
+  &:active {
+    transform: translateY(1px);
+  }
+}
+
+.slide-enter-active,
+.slide-leave-active {
+  transition: all 0.3s ease-out;
+}
+
+.slide-enter-from {
+  opacity: 0;
+  transform: translateY(-20px);
+}
+
+.slide-leave-to {
+  opacity: 0;
+  transform: translateY(-20px);
 }
 </style> 
