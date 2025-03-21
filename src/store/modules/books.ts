@@ -230,23 +230,24 @@ const mutations = {
     // Ana kitap listesinde güncelle
     const bookIndex = state.books.findIndex(b => b.id === bookId)
     if (bookIndex !== -1) {
-      const updatedBook = {
-        ...state.books[bookIndex],
-        isFavorite: !state.books[bookIndex].isFavorite
-      }
+      const book = state.books[bookIndex]
+      const isFavorite = !book.isFavorite
       
       // Ana kitap listesini güncelle
-      state.books.splice(bookIndex, 1, updatedBook)
-      
-      // Favori listesini güncelle
-      if (updatedBook.isFavorite) {
-        state.userFavorites = [...state.userFavorites, updatedBook]
-      } else {
-        state.userFavorites = state.userFavorites.filter(b => b.id !== bookId)
+      state.books[bookIndex] = {
+        ...book,
+        isFavorite
       }
       
+      // Favori listesini güncelle
+      const updatedFavorites = isFavorite 
+        ? [...state.userFavorites, state.books[bookIndex]]
+        : state.userFavorites.filter(b => b.id !== bookId)
+      
+      state.userFavorites = updatedFavorites
+      
       // LocalStorage'ı güncelle
-      localStorage.setItem('userFavorites', JSON.stringify(state.userFavorites))
+      localStorage.setItem('userFavorites', JSON.stringify(updatedFavorites))
     }
   },
   setLoading(state: BooksState, loading: boolean) {
@@ -282,6 +283,7 @@ const mutations = {
 const actions = {
   async initialize({ dispatch }: BooksActionContext) {
     await dispatch('fetchBooks')
+    await dispatch('fetchUserFavorites') // Favorileri yükle
   },
 
   async fetchBooks({ commit, state, rootState }: BooksActionContext) {
@@ -368,6 +370,7 @@ const actions = {
         isFavorite: favorites.some((fav: Book) => fav.id === book.id)
       }))
       
+      // Favori listesini güncelle
       commit('setUserFavorites', favorites)
     } catch (error) {
       commit('setError', 'Favoriler yüklenirken bir hata oluştu')

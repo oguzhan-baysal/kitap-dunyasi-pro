@@ -52,21 +52,22 @@ const handlePageChange = (page: number) => {
   loadFavorites()
 }
 
-const handleRemoveFavorite = async (bookId: string) => {
+const handleRemoveFavorite = async (bookId: number) => {
   try {
-    await store.dispatch('favorites/removeFavorite', bookId)
+    await store.dispatch('books/toggleFavorite', bookId)
     await loadFavorites()
   } catch (error) {
     errorMessage.value = 'Kitap favorilerden çıkarılırken bir hata oluştu'
   }
 }
 
-function viewBook(bookId: string) {
+function viewBook(bookId: number) {
   router.push(`/books/${bookId}`)
 }
 
-function removeFavorite(bookId: string) {
+function removeFavorite(bookId: number) {
   store.dispatch('books/toggleFavorite', bookId)
+  loadFavorites()
 }
 
 onMounted(loadFavorites)

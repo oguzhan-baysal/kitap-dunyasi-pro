@@ -9,23 +9,21 @@ const props = defineProps<{
 
 const store = useStore()
 
-const isFavorite = computed(() => 
-  store.getters['favorites/isFavorite'](props.book.id)
-)
+const isFavorite = computed(() => props.book.isFavorite)
 
 const toggleFavorite = () => {
-  if (isFavorite.value) {
-    store.dispatch('favorites/removeFromFavorites', props.book.id)
-  } else {
-    store.dispatch('favorites/addToFavorites', props.book)
-  }
+  store.dispatch('books/toggleFavorite', props.book.id)
 }
 
 const formattedPrice = computed(() => {
+  const selectedCurrency = store.getters['currency/getSelectedCurrency']
+  const rate = store.getters['currency/getRate'](selectedCurrency)
+  const price = props.book.price * rate
+
   return new Intl.NumberFormat('tr-TR', {
     style: 'currency',
-    currency: 'TRY'
-  }).format(props.book.price)
+    currency: selectedCurrency
+  }).format(price)
 })
 </script>
 
