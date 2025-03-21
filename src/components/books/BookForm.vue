@@ -3,6 +3,7 @@ import { ref, computed } from 'vue'
 import type { Book } from '@/types/book'
 import { useVuelidate } from '@vuelidate/core'
 import { required, minLength, numeric } from '@vuelidate/validators'
+import { useFormValidation } from '@/composables/useFormValidation'
 
 const props = defineProps<{
   initialBook?: Book
@@ -78,11 +79,32 @@ const handleImageSelect = (event: Event) => {
   }
 }
 
-const handleSubmit = async () => {
-  const isValid = await v$.value.$validate()
-  if (!isValid) return
+const {
+  formData,
+  errors,
+  touched,
+  isValid,
+  handleInput,
+  handleBlur,
+  validateForm,
+  getFieldError
+} = useFormValidation(props.initialBook || {
+  title: '',
+  author: '',
+  description: '',
+  price: 0,
+  category: '',
+  language: '',
+  pageCount: 0,
+  publishYear: new Date().getFullYear(),
+  isbn: '',
+  publisher: ''
+})
 
-  emit('submit', book.value as Book)
+const handleSubmit = () => {
+  if (validateForm()) {
+    emit('submit', formData.value as Book)
+  }
 }
 </script>
 
@@ -104,42 +126,49 @@ const handleSubmit = async () => {
       <!-- Adım 1: Temel Bilgiler -->
       <div v-if="currentStep === 0" class="form-step">
         <div class="form-group">
-          <label for="title">Kitap Adı</label>
+          <label for="title">Kitap Adı *</label>
           <input
             id="title"
-            v-model="book.title"
+            v-model="formData.title"
+            @input="handleInput('title', $event.target.value)"
+            @blur="handleBlur('title')"
             type="text"
-            :class="{ error: v$.title.$error }"
-          >
-          <span v-if="v$.title.$error" class="error-text">
-            Kitap adı en az 3 karakter olmalıdır
+            :class="{ 'error': getFieldError('title') }"
+          />
+          <span class="error-message" v-if="getFieldError('title')">
+            {{ getFieldError('title') }}
           </span>
         </div>
 
         <div class="form-group">
-          <label for="author">Yazar</label>
+          <label for="author">Yazar *</label>
           <input
             id="author"
-            v-model="book.author"
+            v-model="formData.author"
+            @input="handleInput('author', $event.target.value)"
+            @blur="handleBlur('author')"
             type="text"
-            :class="{ error: v$.author.$error }"
-          >
-          <span v-if="v$.author.$error" class="error-text">
-            Yazar adı en az 3 karakter olmalıdır
+            :class="{ 'error': getFieldError('author') }"
+          />
+          <span class="error-message" v-if="getFieldError('author')">
+            {{ getFieldError('author') }}
           </span>
         </div>
 
         <div class="form-group">
-          <label for="price">Fiyat</label>
+          <label for="price">Fiyat *</label>
           <input
             id="price"
-            v-model.number="book.price"
+            v-model.number="formData.price"
+            @input="handleInput('price', $event.target.value)"
+            @blur="handleBlur('price')"
             type="number"
+            min="0"
             step="0.01"
-            :class="{ error: v$.price.$error }"
-          >
-          <span v-if="v$.price.$error" class="error-text">
-            Geçerli bir fiyat giriniz
+            :class="{ 'error': getFieldError('price') }"
+          />
+          <span class="error-message" v-if="getFieldError('price')">
+            {{ getFieldError('price') }}
           </span>
         </div>
       </div>
@@ -147,15 +176,16 @@ const handleSubmit = async () => {
       <!-- Adım 2: Detaylar -->
       <div v-if="currentStep === 1" class="form-step">
         <div class="form-group">
-          <label for="description">Açıklama</label>
+          <label for="description">Açıklama *</label>
           <textarea
             id="description"
-            v-model="book.description"
-            rows="6"
-            :class="{ error: v$.description.$error }"
+            v-model="formData.description"
+            @input="handleInput('description', $event.target.value)"
+            @blur="handleBlur('description')"
+            :class="{ 'error': getFieldError('description') }"
           ></textarea>
-          <span v-if="v$.description.$error" class="error-text">
-            Açıklama en az 10 karakter olmalıdır
+          <span class="error-message" v-if="getFieldError('description')">
+            {{ getFieldError('description') }}
           </span>
         </div>
 
@@ -217,8 +247,9 @@ const handleSubmit = async () => {
           v-else
           type="submit"
           class="btn-success"
+          :disabled="!isValid"
         >
-          Kaydet
+          {{ props.initialBook ? 'Güncelle' : 'Ekle' }}
         </button>
       </div>
     </form>
@@ -323,7 +354,7 @@ const handleSubmit = async () => {
       resize: vertical;
     }
 
-    .error-text {
+    .error-message {
       display: block;
       margin-top: $spacing-1;
       color: var(--color-error);
@@ -389,6 +420,11 @@ const handleSubmit = async () => {
       &:hover {
         background: var(--color-success-dark);
       }
+    }
+
+    &:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
     }
   }
 }

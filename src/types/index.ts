@@ -1,16 +1,21 @@
 export interface Book {
-  id: string
+  id: number
   title: string
   author: string
+  description: string
   price: number
   coverImage: string
-  description: string
   category: string
   language: string
   pageCount: number
   publishYear: number
-  publisher: string
-  isbn: string
+  publisher?: string
+  isbn?: string
+  rating: number
+  publishDate?: string
+  isFree: boolean
+  isFavorite: boolean
+  userId: number
 }
 
 export interface RootState {
