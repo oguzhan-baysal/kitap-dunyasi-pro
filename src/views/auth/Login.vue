@@ -52,6 +52,7 @@ const handleSubmit = async () => {
               required
               placeholder="E-posta adresiniz"
               :disabled="loading"
+              autocomplete="email"
             >
           </div>
 
@@ -64,6 +65,7 @@ const handleSubmit = async () => {
               required
               placeholder="Şifreniz"
               :disabled="loading"
+              autocomplete="current-password"
             >
           </div>
 

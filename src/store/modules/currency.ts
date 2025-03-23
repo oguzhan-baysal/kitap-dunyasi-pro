@@ -1,7 +1,16 @@
 // @ts-ignore
 import { Module } from 'vuex'
-import { RootState, CurrencyState } from '../types'
+import { RootState } from '../types'
 import { currencyService, ExchangeRates } from '@/services/currencyService'
+
+export interface CurrencyState {
+  rates: Record<string, number>;
+  baseCurrency: string;
+  selectedCurrency: string;
+  loading: boolean;
+  error: string | null;
+  lastUpdate: string | null;
+}
 
 const state = (): CurrencyState => ({
   rates: {},

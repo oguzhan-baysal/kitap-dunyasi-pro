@@ -41,6 +41,8 @@ onMounted(async () => {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  background-color: var(--color-background);
+  color: var(--color-text);
 }
 
 .main-content {
@@ -69,17 +71,23 @@ onMounted(async () => {
   --color-background: #ffffff;
   --color-background-soft: #f8fafc;
   --color-background-mute: #f1f5f9;
+  --color-card-bg: #ffffff;
 
   // Kenarlık renkleri
   --color-border: #e2e8f0;
   --color-border-hover: #cbd5e1;
+
+  // Form ve UI elementleri
+  --color-input-bg: #ffffff;
+  --color-button-text: #000000;
+  --color-button-bg: #ffffff;
 }
 
-:root.dark {
+[data-theme="dark"] {
   // Ana renkler
-  --color-primary: #1d4ed8;
-  --color-primary-dark: #1e40af;
-  --color-primary-light: #3b82f6;
+  --color-primary: #60a5fa;
+  --color-primary-dark: #3b82f6;
+  --color-primary-light: #93c5fd;
   --color-secondary: #4b5563;
   --color-success: #059669;
   --color-error: #dc2626;
@@ -93,23 +101,19 @@ onMounted(async () => {
   --color-link: #60a5fa;
 
   // Arkaplan renkleri
-  --color-background: #030712;
-  --color-background-soft: #0f1629;
-  --color-background-mute: #1f2937;
+  --color-background: #0f172a;
+  --color-background-soft: #1e293b;
+  --color-background-mute: #334155;
+  --color-card-bg: #1e293b;
 
   // Kenarlık renkleri
-  --color-border: #1f2937;
-  --color-border-hover: #374151;
+  --color-border: #334155;
+  --color-border-hover: #475569;
 
   // Form ve UI elementleri
-  --color-input-bg: #1f2937;
-  --color-dropdown-bg: #1f2937;
-  --color-modal-bg: #1f2937;
-  --color-tooltip-bg: #1f2937;
-  --color-hover-bg: #374151;
-  --color-active-bg: #4b5563;
-  --color-disabled-bg: #1f2937;
-  --color-placeholder: #94a3b8;
+  --color-input-bg: #1e293b;
+  --color-button-text: #ffffff;
+  --color-button-bg: #1e293b;
 }
 
 * {
@@ -137,6 +141,31 @@ body {
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+button {
+  background-color: var(--color-button-bg);
+  color: var(--color-button-text);
+  border: 1px solid var(--color-border);
+  
+  &:hover {
+    border-color: var(--color-border-hover);
+  }
+}
+
+input, select, textarea {
+  background-color: var(--color-input-bg);
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
+  
+  &:focus {
+    border-color: var(--color-primary);
+  }
+}
+
+.card {
+  background-color: var(--color-card-bg);
+  border: 1px solid var(--color-border);
 }
 
 [role="link"] {

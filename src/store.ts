@@ -1,5 +1,5 @@
-import { createStore } from 'vuex'
-import type { RootState } from '@/types'
+import { createStore, Store as VuexStore, useStore as baseUseStore } from 'vuex'
+import type { RootState } from './store/types'
 
 // Modülleri import et
 import { auth } from '@/store/modules/auth'
@@ -9,24 +9,27 @@ import favorites from '@/store/modules/favorites'
 import comments from '@/store/modules/comments'
 import ui from '@/store/modules/ui'
 
-const store = createStore<RootState>({
-  state: () => ({
+// Store tipini tanımla
+export type Store = VuexStore<RootState>
+
+// Store'u oluştur
+export const store = createStore({
+  state: {
     version: '1.0.0'
-  }),
+  },
   modules: {
-    auth,
-    books,
-    currency,
-    favorites,
-    comments,
-    ui
+    auth: auth as any,
+    books: books as any,
+    currency: currency as any,
+    favorites: favorites as any,
+    comments: comments as any,
+    ui: ui as any
   }
 })
 
-export function useStore() {
-  return store
+// useStore hook'unu oluştur
+export function useStore(): Store {
+  return baseUseStore() as Store
 }
-
-export type Store = typeof store
 
 export default store 

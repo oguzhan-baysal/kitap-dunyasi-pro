@@ -7,24 +7,19 @@ export function useTheme() {
 
   const toggleTheme = () => {
     theme.value = theme.value === 'light' ? 'dark' : 'light'
-    localStorage.setItem('theme', theme.value)
-    document.documentElement.setAttribute('data-theme', theme.value)
-    store.commit('ui/SET_THEME', theme.value)
+    applyTheme(theme.value)
   }
 
-  // Sayfa yüklendiğinde tema ayarını uygula
+  const applyTheme = (newTheme: string) => {
+    document.documentElement.setAttribute('data-theme', newTheme)
+    localStorage.setItem('theme', newTheme)
+    store.commit('ui/SET_THEME', newTheme)
+  }
+
   const initTheme = () => {
-    // Varsayılan olarak light mode başlat
-    const savedTheme = localStorage.getItem('theme')
-    if (!savedTheme) {
-      localStorage.setItem('theme', 'light')
-      theme.value = 'light'
-    } else {
-      theme.value = savedTheme
-    }
-    
-    document.documentElement.setAttribute('data-theme', theme.value)
-    store.commit('ui/SET_THEME', theme.value)
+    const savedTheme = localStorage.getItem('theme') || 'light'
+    theme.value = savedTheme
+    applyTheme(savedTheme)
   }
 
   // Sistem temasını takip et
@@ -48,9 +43,7 @@ export function useTheme() {
 
   // Tema değişikliklerini izle
   watch(theme, (newTheme) => {
-    document.documentElement.setAttribute('data-theme', newTheme)
-    localStorage.setItem('theme', newTheme)
-    store.commit('ui/SET_THEME', newTheme)
+    applyTheme(newTheme)
   })
 
   return {
