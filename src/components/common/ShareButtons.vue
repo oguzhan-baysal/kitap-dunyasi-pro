@@ -39,20 +39,19 @@ const copyLink = async () => {
     <h3>Paylaş</h3>
     <div class="buttons">
       <button @click="shareOnTwitter" class="twitter">
-        <i class="fab fa-twitter"></i>
-        Twitter
+        <i class="fa-brands fa-x-twitter"></i>
       </button>
       <button @click="shareOnFacebook" class="facebook">
         <i class="fab fa-facebook"></i>
-        Facebook
+        <span>Facebook</span>
       </button>
       <button @click="shareOnWhatsapp" class="whatsapp">
         <i class="fab fa-whatsapp"></i>
-        WhatsApp
+        <span>WhatsApp</span>
       </button>
       <button @click="copyLink" class="copy">
         <i class="fas fa-link"></i>
-        Bağlantıyı Kopyala
+        <span>Bağlantıyı Kopyala</span>
       </button>
     </div>
   </div>
@@ -82,33 +81,73 @@ const copyLink = async () => {
       padding: $spacing-2 $spacing-4;
       border: none;
       border-radius: $border-radius;
-      color: white;
+      color: white !important;
       font-weight: $font-weight-medium;
       cursor: pointer;
-      transition: opacity 0.2s;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      position: relative;
+      overflow: hidden;
+      outline: none;
+
+      &::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(
+          120deg,
+          transparent,
+          rgba(255, 255, 255, 0.3),
+          transparent
+        );
+        transition: 0.5s ease;
+        pointer-events: none;
+      }
 
       i {
         font-size: $font-size-lg;
+        color: white !important;
+        position: relative;
+        z-index: 2;
       }
 
-      &:hover {
-        opacity: 0.9;
+      span {
+        position: relative;
+        z-index: 2;
+        color: white !important;
+      }
+
+      &:hover, &:focus, &:active {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+
+        &::before {
+          left: 100%;
+        }
+      }
+
+      &:focus {
+        box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.3);
       }
 
       &.twitter {
-        background: #1da1f2;
+        background-color: #000000 !important;
+        padding: $spacing-2;
       }
 
       &.facebook {
-        background: #1877f2;
+        background-color: #1877f2 !important;
       }
 
       &.whatsapp {
-        background: #25d366;
+        background-color: #25d366 !important;
       }
 
       &.copy {
-        background: var(--color-text);
+        background-color: #4a5568 !important;
       }
     }
   }
