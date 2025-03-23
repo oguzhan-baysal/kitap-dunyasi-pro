@@ -14,7 +14,7 @@ const store = useStore()
 const book = ref<Book | null>(null)
 const isLoading = ref(true)
 const error = ref<string | null>(null)
-const rating = ref(0)
+const rating = ref(5)
 
 const formattedPrice = computed(() => {
   if (!book.value) return ''
@@ -70,7 +70,9 @@ onMounted(async () => {
                 <option value="1">1</option>
               </select>
               <div class="stars">
-                <i v-for="n in 5" :key="n" class="fas fa-star" :class="{ 'active': n <= rating }"></i>
+                <svg v-for="n in 5" :key="n" class="star" :class="{ 'filled': n <= rating, 'empty': n > rating }" viewBox="0 0 24 24" width="24" height="24">
+                  <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
+                </svg>
               </div>
             </div>
             <div class="price-container">
@@ -112,6 +114,7 @@ onMounted(async () => {
 
   label {
     font-size: 0.9rem;
+    color: #000000 !important;
   }
 
   select {
@@ -123,12 +126,21 @@ onMounted(async () => {
     appearance: none;
     text-align: center;
     cursor: pointer;
+    color: #000000 !important;
   }
 
   .stars {
     display: flex;
     gap: 0.25rem;
-    color: #ffd700;
+    
+    .star {
+      fill: #e5e7eb;
+      transition: fill 0.2s ease;
+      
+      &.filled {
+        fill: #ffd700;
+      }
+    }
   }
 }
 
@@ -282,7 +294,7 @@ onMounted(async () => {
           }
 
           .currency-selector {
-            min-width: 100px;
+            min-width: 70px;
           }
         }
 

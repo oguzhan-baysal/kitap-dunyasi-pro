@@ -404,19 +404,42 @@ const actions = {
   },
 
   async deleteBook({ commit }: { commit: Commit }, bookId: number) {
-    commit('setLoading', true)
-    commit('setError', null)
-
     try {
-      // API çağrısı simülasyonu
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      
+      // Kitabı localStorage'dan sil
+      const books = JSON.parse(localStorage.getItem('books') || '[]')
+      const updatedBooks = books.filter((book: Book) => book.id !== bookId)
+      localStorage.setItem('books', JSON.stringify(updatedBooks))
+
       commit('deleteBook', bookId)
+      return true
     } catch (error) {
-      commit('setError', 'Kitap silinirken bir hata oluştu')
-      throw error
-    } finally {
+      console.error('Error deleting book:', error)
+      return false
+    }
+  },
+
+  async fetchBookDetails({ commit, state }: { commit: Commit, state: BooksState }, bookId: number) {
+    try {
+      commit('setLoading', true)
+      commit('setError', null)
+
+      // LocalStorage'dan kitabı bul
+      const books = JSON.parse(localStorage.getItem('books') || '[]')
+      const book = books.find((b: Book) => b.id === bookId)
+
+      if (book) {
+        commit('setCurrentBook', book)
+      } else {
+        commit('setError', 'Kitap bulunamadı')
+      }
+
       commit('setLoading', false)
+      return book
+    } catch (error) {
+      console.error('Error fetching book details:', error)
+      commit('setError', 'Kitap detayları yüklenirken bir hata oluştu')
+      commit('setLoading', false)
+      return null
     }
   },
 

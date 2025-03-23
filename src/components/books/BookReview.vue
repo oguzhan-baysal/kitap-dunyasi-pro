@@ -37,19 +37,15 @@ const submitReview = async () => {
     
     <form @submit.prevent="submitReview" class="review-form">
       <div class="form-group">
-        <label for="rating">Puanınız:</label>
+        <label for="rating" class="rating-label">Puanınız:</label>
         <div class="rating-input">
-          <select v-model="rating" id="rating">
-            <option v-for="n in 5" :key="n" :value="n">{{ n }}</option>
+          <select v-model="rating" id="rating" class="rating-select">
+            <option value="5" selected>5</option>
+            <option value="4">4</option>
+            <option value="3">3</option>
+            <option value="2">2</option>
+            <option value="1">1</option>
           </select>
-          <div class="stars">
-            <i 
-              v-for="n in 5" 
-              :key="n"
-              class="fas"
-              :class="n <= rating ? 'fa-star' : 'fa-star-o'"
-            ></i>
-          </div>
         </div>
       </div>
 
@@ -92,6 +88,13 @@ const submitReview = async () => {
   .form-group {
     margin-bottom: $spacing-4;
 
+    .rating-label {
+      display: block;
+      margin-bottom: $spacing-2;
+      color: #000000 !important;
+      font-weight: $font-weight-medium;
+    }
+
     label {
       display: block;
       margin-bottom: $spacing-2;
@@ -104,17 +107,28 @@ const submitReview = async () => {
       align-items: center;
       gap: $spacing-4;
 
-      select {
-        padding: $spacing-2;
+      .rating-select {
+        padding: 0.25rem;
         border: 1px solid var(--color-border);
-        border-radius: $border-radius;
+        border-radius: 4px;
         background: var(--color-background);
-        color: var(--color-text);
-      }
+        color: #000000 !important;
+        width: 45px;
+        text-align: center;
+        cursor: pointer;
+        appearance: none;
+        -webkit-appearance: none;
+        background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+        background-repeat: no-repeat;
+        background-position: right 4px center;
+        background-size: 12px;
+        padding-right: 20px;
+        background-color: #ffffff;
 
-      .stars {
-        color: #ffd700;
-        font-size: $font-size-lg;
+        &:focus {
+          outline: none;
+          border-color: var(--color-primary);
+        }
       }
     }
 
