@@ -77,9 +77,12 @@ const actions = {
     if (getters.isFavorite(bookId)) {
       await dispatch('removeFromFavorites', bookId)
     } else {
-      const book = rootState.books.books.find((b: Book) => b.id === bookId)
-      if (book) {
-        await dispatch('addToFavorites', book)
+      const books = rootState.books?.books
+      if (books) {
+        const book = books.find((b: Book) => b.id === bookId)
+        if (book) {
+          await dispatch('addToFavorites', book)
+        }
       }
     }
   }

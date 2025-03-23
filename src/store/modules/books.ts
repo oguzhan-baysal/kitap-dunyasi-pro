@@ -1,55 +1,8 @@
 // @ts-ignore
-import { Module, Commit } from 'vuex'
-import { RootState } from '../types'
+import { Module, Commit, ActionContext } from 'vuex'
+import type { RootState, BooksState, Book } from '@/types'
 
-export interface Book {
-  id: number
-  title: string
-  author: string
-  description: string
-  price: number
-  coverImage: string
-  category: string
-  language: string
-  pageCount: number
-  publishYear: number
-  isFree: boolean
-  userId: number
-  isFavorite: boolean
-  rating?: number
-  publishDate?: string
-}
-
-export interface BooksState {
-  books: Book[]
-  userBooks: Book[]
-  userFavorites: Book[]
-  currentBook: Book | null
-  currentPage: number
-  itemsPerPage: number
-  hasMore: boolean
-  loading: boolean
-  error: string | null
-  filters: {
-    search: string | null
-    category: string | null
-    language: string | null
-    minPrice: number | null
-    maxPrice: number | null
-    minYear: number | null
-    maxYear: number | null
-    minPages: number | null
-    maxPages: number | null
-    isFree: boolean | null
-    rating: number | null
-  }
-  sort: {
-    field: string
-    order: 'asc' | 'desc'
-  }
-}
-
-interface BooksActionContext {
+interface BooksActionContext extends ActionContext<BooksState, RootState> {
   commit: Commit
   state: BooksState
   rootState: RootState
@@ -66,6 +19,7 @@ const state = (): BooksState => ({
   hasMore: true,
   loading: false,
   error: null,
+  newBook: null,
   filters: {
     search: null,
     category: null,
@@ -131,18 +85,18 @@ const getters = {
 
     // Yıl filtresi
     if (state.filters.minYear !== null) {
-      filteredBooks = filteredBooks.filter(book => book.publishYear >= state.filters.minYear!)
+      filteredBooks = filteredBooks.filter(book => typeof book.publishYear === 'number' && book.publishYear >= state.filters.minYear!)
     }
     if (state.filters.maxYear !== null) {
-      filteredBooks = filteredBooks.filter(book => book.publishYear <= state.filters.maxYear!)
+      filteredBooks = filteredBooks.filter(book => typeof book.publishYear === 'number' && book.publishYear <= state.filters.maxYear!)
     }
 
     // Sayfa sayısı filtresi
     if (state.filters.minPages !== null) {
-      filteredBooks = filteredBooks.filter(book => book.pageCount >= state.filters.minPages!)
+      filteredBooks = filteredBooks.filter(book => typeof book.pageCount === 'number' && book.pageCount >= state.filters.minPages!)
     }
     if (state.filters.maxPages !== null) {
-      filteredBooks = filteredBooks.filter(book => book.pageCount <= state.filters.maxPages!)
+      filteredBooks = filteredBooks.filter(book => typeof book.pageCount === 'number' && book.pageCount <= state.filters.maxPages!)
     }
 
     // Ücretsiz/Ücretli filtresi
@@ -163,9 +117,9 @@ const getters = {
         case 'rating':
           return ((a.rating || 0) - (b.rating || 0)) * order
         case 'publishYear':
-          return (a.publishYear - b.publishYear) * order
+          return ((typeof a.publishYear === 'number' ? a.publishYear : 0) - (typeof b.publishYear === 'number' ? b.publishYear : 0)) * order
         case 'pageCount':
-          return (a.pageCount - b.pageCount) * order
+          return ((typeof a.pageCount === 'number' ? a.pageCount : 0) - (typeof b.pageCount === 'number' ? b.pageCount : 0)) * order
         case 'publishDate':
           if (!a.publishDate || !b.publishDate) return 0
           return (new Date(a.publishDate).getTime() - new Date(b.publishDate).getTime()) * order
@@ -277,6 +231,31 @@ const mutations = {
       isFree: filters.isFree,
       rating: filters.rating
     }
+  },
+  setNewBook(state: BooksState, book: BooksState['newBook']) {
+    state.newBook = book
+  },
+  updateNewBook(state: BooksState, updates: Partial<NonNullable<BooksState['newBook']>>) {
+    if (state.newBook) {
+      state.newBook = { ...state.newBook, ...updates }
+    } else {
+      state.newBook = {
+        title: '',
+        author: '',
+        description: '',
+        price: 0,
+        coverImage: '',
+        category: '',
+        language: '',
+        pageCount: 0,
+        publishYear: new Date().getFullYear(),
+        isFree: false,
+        ...updates
+      }
+    }
+  },
+  clearNewBook(state: BooksState) {
+    state.newBook = null
   }
 }
 
@@ -338,7 +317,7 @@ const actions = {
       commit('setError', null)
 
       // Kullanıcı giriş yapmış mı kontrol et
-      const userId = rootState.auth.user?.id
+      const userId = rootState.auth?.user?.id
       if (!userId) {
         commit('setUserBooks', [])
         return
@@ -347,7 +326,7 @@ const actions = {
       // Sadece kullanıcının kendi kitaplarını filtrele
       const userBooks = state.books.filter(book => book.userId === userId)
       commit('setUserBooks', userBooks)
-      commit('setBooks', userBooks) // Kitaplarım sayfasında sadece kullanıcının kitaplarını göster
+      commit('setBooks', userBooks)
     } catch (error) {
       commit('setError', 'Kitaplarınız yüklenirken bir hata oluştu')
     } finally {
@@ -389,7 +368,7 @@ const actions = {
         setTimeout(() => {
           const book: Book = {
             id: Math.floor(Math.random() * 10000) + 1,
-            userId: rootState.auth.user?.id || 1,
+            userId: rootState.auth?.user?.id || 1,
             isFavorite: false,
             ...bookData
           } as Book

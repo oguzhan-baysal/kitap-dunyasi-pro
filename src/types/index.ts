@@ -5,16 +5,17 @@ export interface Book {
   description: string
   price: number
   rating: number
-  publishDate?: string
+  publishDate: string
   coverImage: string
-  category?: string
-  language?: string
-  pageCount?: number
-  publishYear?: number
+  category: string
+  language: string
+  pageCount: number
+  publishYear: number
   publisher?: string
   isbn?: string
-  isFavorite?: boolean
+  isFavorite: boolean
   isFree: boolean
+  userId: number
 }
 
 export interface User {
@@ -37,11 +38,36 @@ export interface Comment {
 
 export interface RootState {
   version: string
+  auth?: AuthState
+  books?: BooksState
+  currency?: CurrencyState
+  favorites?: FavoritesState
+  comments?: CommentsState
+  ui?: UIState
+}
+
+// Modül state tipleri
+export interface AuthModuleState {
   auth: AuthState
+}
+
+export interface BooksModuleState {
   books: BooksState
+}
+
+export interface CurrencyModuleState {
   currency: CurrencyState
+}
+
+export interface FavoritesModuleState {
   favorites: FavoritesState
+}
+
+export interface CommentsModuleState {
   comments: CommentsState
+}
+
+export interface UIModuleState {
   ui: UIState
 }
 
@@ -65,10 +91,29 @@ export interface BooksState {
   hasMore: boolean
   loading: boolean
   error: string | null
+  newBook: {
+    title: string
+    author: string
+    description: string
+    price: number
+    coverImage: string
+    category: string
+    language: string
+    pageCount: number
+    publishYear: number
+    isFree: boolean
+  } | null
   filters: {
+    search: string | null
     category: string | null
+    language: string | null
     minPrice: number | null
     maxPrice: number | null
+    minYear: number | null
+    maxYear: number | null
+    minPages: number | null
+    maxPages: number | null
+    isFree: boolean | null
     rating: number | null
   }
   sort: {

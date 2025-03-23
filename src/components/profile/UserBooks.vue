@@ -16,15 +16,6 @@ const currentPage = ref(1)
 const itemsPerPage = 12
 const totalItems = ref(0)
 
-const sortOptions = [
-  { value: 'date-desc', label: 'En Yeniler' },
-  { value: 'date-asc', label: 'En Eskiler' },
-  { value: 'title-asc', label: 'İsme Göre (A-Z)' },
-  { value: 'title-desc', label: 'İsme Göre (Z-A)' }
-]
-
-const selectedSort = ref('date-desc')
-
 const loadBooks = async () => {
   try {
     isLoading.value = true
@@ -38,12 +29,6 @@ const loadBooks = async () => {
   } finally {
     isLoading.value = false
   }
-}
-
-const handleSort = (value: string) => {
-  selectedSort.value = value
-  currentPage.value = 1
-  loadBooks()
 }
 
 const handlePageChange = (page: number) => {
@@ -68,22 +53,6 @@ onMounted(loadBooks)
   <div class="user-books">
     <div class="header">
       <h2>Kitaplarım</h2>
-      
-      <div class="actions">
-        <select 
-          v-model="selectedSort"
-          class="sort-select"
-          @change="handleSort((($event.target as HTMLSelectElement).value))"
-        >
-          <option 
-            v-for="option in sortOptions"
-            :key="option.value"
-            :value="option.value"
-          >
-            {{ option.label }}
-          </option>
-        </select>
-      </div>
     </div>
 
     <div v-if="isLoading" class="loading">
@@ -150,12 +119,6 @@ onMounted(loadBooks)
   border-radius: $border-radius-lg;
   box-shadow: $shadow-sm;
   margin-top: $spacing-8;
-
-  h2 {
-    color: var(--color-heading);
-    margin-bottom: $spacing-6;
-    font-size: $font-size-xl;
-  }
 }
 
 .header {
@@ -163,21 +126,12 @@ onMounted(loadBooks)
   justify-content: space-between;
   align-items: center;
   margin-bottom: 2rem;
-}
 
-.actions {
-  display: flex;
-  gap: 1rem;
-  align-items: center;
-}
-
-.sort-select {
-  padding: 0.5rem;
-  border: 1px solid var(--color-border);
-  border-radius: 4px;
-  background: var(--color-card-bg);
-  color: var(--color-text-primary);
-  font-size: 0.875rem;
+  h2 {
+    color: var(--color-heading);
+    margin: 0;
+    font-size: $font-size-xl;
+  }
 }
 
 .loading {
@@ -223,72 +177,62 @@ onMounted(loadBooks)
   &:hover {
     transform: translateY(-2px);
   }
-}
 
-.book-cover {
-  width: 100%;
-  height: 200px;
-  object-fit: cover;
-}
-
-.book-info {
-  padding: $spacing-4;
-
-  .book-title {
-    font-size: $font-size-lg;
-    font-weight: 500;
-    color: var(--color-heading);
-    margin: 0 0 $spacing-2;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+  .book-cover {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
   }
 
-  .book-author {
-    color: var(--color-text-light);
-    font-size: $font-size-sm;
-    margin-bottom: $spacing-4;
-  }
-}
+  .book-info {
+    padding: $spacing-4;
 
-.book-actions {
-  display: flex;
-  gap: $spacing-2;
-  margin-top: $spacing-4;
-
-  button {
-    flex: 1;
-    padding: $spacing-2 $spacing-4;
-    border-radius: 4px;
-    font-size: $font-size-sm;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: $spacing-2;
-    cursor: pointer;
-    transition: all 0.2s;
-    border: none;
-    font-weight: 500;
-    min-width: 100px;
-    color: white;
-
-    i {
-      font-size: $font-size-base;
+    .book-title {
+      font-size: $font-size-lg;
+      color: var(--color-heading);
+      margin-bottom: $spacing-2;
     }
 
-    &.btn-edit {
-      background: var(--color-primary);
-
-      &:hover {
-        background: var(--color-primary-dark);
-      }
+    .book-author {
+      color: var(--color-text-light);
+      font-size: $font-size-sm;
+      margin-bottom: $spacing-4;
     }
 
-    &.btn-delete {
-      background: #dc3545;
+    .book-actions {
+      display: flex;
+      gap: $spacing-2;
 
-      &:hover {
-        background: #c82333;
+      button {
+        flex: 1;
+        padding: $spacing-2 $spacing-4;
+        border: none;
+        border-radius: $border-radius;
+        cursor: pointer;
+        font-size: $font-size-sm;
+        transition: all 0.2s;
+
+        &.btn-edit {
+          background: var(--color-primary);
+          color: white;
+
+          &:hover {
+            background: var(--color-primary-dark);
+          }
+
+          i {
+            margin-right: $spacing-2;
+          }
+        }
+
+        &.btn-delete {
+          background: var(--color-error);
+          color: white;
+
+          &:hover {
+            background: var(--color-error-dark);
+          }
+        }
       }
     }
   }
@@ -326,12 +270,6 @@ onMounted(loadBooks)
 }
 
 @media (max-width: 768px) {
-  .header {
-    flex-direction: column;
-    gap: 1rem;
-    text-align: center;
-  }
-
   .books-grid {
     grid-template-columns: repeat(2, 1fr);
   }

@@ -80,7 +80,7 @@ const router = createRouter({
     {
       path: '/books/add',
       name: 'book-add',
-      component: BookManage,
+      component: () => import('@/views/AddBook.vue'),
       meta: {
         title: 'Yeni Kitap Ekle',
         requiresAuth: true,
