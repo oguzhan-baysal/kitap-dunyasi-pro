@@ -15,9 +15,12 @@ export function useTheme() {
   // Sayfa yüklendiğinde tema ayarını uygula
   const initTheme = () => {
     // Varsayılan olarak light mode başlat
-    if (!localStorage.getItem('theme')) {
+    const savedTheme = localStorage.getItem('theme')
+    if (!savedTheme) {
       localStorage.setItem('theme', 'light')
       theme.value = 'light'
+    } else {
+      theme.value = savedTheme
     }
     
     document.documentElement.setAttribute('data-theme', theme.value)
@@ -29,7 +32,8 @@ export function useTheme() {
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
     
     const handleChange = (e: MediaQueryListEvent | MediaQueryList) => {
-      const newTheme = e.matches ? 'dark' : 'light'
+      // Sistem temasını yoksay, her zaman light mode kullan
+      const newTheme = 'light'
       theme.value = newTheme
       localStorage.setItem('theme', newTheme)
       document.documentElement.setAttribute('data-theme', newTheme)
