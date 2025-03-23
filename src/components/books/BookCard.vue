@@ -53,8 +53,18 @@ const handleImageError = (e: Event) => {
         
         <div class="book-rating">
           <div class="stars">
-            <i class="fas fa-star" v-for="n in Math.floor(book.rating)" :key="n"></i>
-            <i class="fas fa-star-half-alt" v-if="book.rating % 1 >= 0.5"></i>
+            <template v-for="n in 5" :key="n">
+              <svg v-if="n <= Math.floor(book.rating)" class="star filled" viewBox="0 0 24 24">
+                <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
+              </svg>
+              <svg v-else-if="n - 0.5 === book.rating" class="star half" viewBox="0 0 24 24">
+                <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
+                <path class="half-star" d="M12 17.27V2l2.81 6.63 7.19.61-5.46 4.73 1.64 7.03z"/>
+              </svg>
+              <svg v-else class="star empty" viewBox="0 0 24 24">
+                <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
+              </svg>
+            </template>
           </div>
           <span class="rating-value">({{ book.rating }})</span>
         </div>
@@ -178,8 +188,29 @@ const handleImageError = (e: Event) => {
     gap: $spacing-1;
     
     .stars {
-      color: #ffd700;
-      font-size: $font-size-sm;
+      display: flex;
+      gap: 2px;
+      
+      .star {
+        width: 16px;
+        height: 16px;
+        
+        &.filled {
+          fill: #ffd700;
+        }
+        
+        &.empty {
+          fill: #e4e5e9;
+        }
+        
+        &.half {
+          fill: #e4e5e9;
+          
+          .half-star {
+            fill: #ffd700;
+          }
+        }
+      }
     }
 
     .rating-value {
