@@ -233,6 +233,8 @@ const onSubmit = handleSubmit(async (values) => {
     border-radius: 4px;
     font-size: 1rem;
     transition: border-color 0.2s;
+    background-color: var(--color-input-bg);
+    color: var(--color-text);
 
     &:focus {
       outline: none;
