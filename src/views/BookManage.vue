@@ -301,7 +301,7 @@ const handleSubmit = async () => {
   h1 {
     margin-bottom: 1.5rem;
     text-align: center;
-    color: #2c3e50;
+    color: var(--color-text-primary);
     font-size: 1.75rem;
     font-weight: 600;
   }
@@ -311,7 +311,7 @@ const handleSubmit = async () => {
   display: flex;
   flex-direction: column;
   gap: 1.25rem;
-  background: #fff;
+  background: var(--color-card-bg);
   padding: 1.5rem;
   border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
@@ -325,7 +325,7 @@ const handleSubmit = async () => {
 
   label {
     font-weight: 500;
-    color: #2c3e50;
+    color: var(--color-text-primary);
     font-size: 0.95rem;
     display: flex;
     align-items: center;
@@ -333,7 +333,7 @@ const handleSubmit = async () => {
 
     &::after {
       content: "*";
-      color: #e74c3c;
+      color: var(--color-error);
       font-size: 1rem;
       line-height: 1;
     }
@@ -345,44 +345,43 @@ const handleSubmit = async () => {
 
   input {
     padding: 0.625rem 0.875rem;
-    border: 1px solid #ddd;
+    border: 1px solid var(--color-border);
     border-radius: 6px;
     font-size: 1rem;
     transition: all 0.2s ease;
     width: 100%;
     box-sizing: border-box;
     height: 42px;
-    background: #fff;
+    min-height: 42px;
+    max-height: 42px;
+    background-color: var(--color-input-bg);
+    color: var(--color-text);
 
     &:focus {
       outline: none;
-      border-color: #3498db;
+      border-color: var(--color-primary);
       box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
     }
 
     &::placeholder {
-      color: #95a5a6;
+      color: var(--color-placeholder);
     }
 
     &.error {
-      border-color: #e74c3c;
-      background-color: #fff;
+      border-color: var(--color-error);
     }
   }
 
   .error-message {
-    color: #e74c3c;
+    position: absolute;
+    bottom: -20px;
+    left: 0;
+    color: var(--color-error);
     font-size: 0.875rem;
-    margin-top: 0.25rem;
-    height: 0;
-    overflow: hidden;
-    transition: all 0.2s ease;
-    opacity: 0;
-    
-    &.visible {
-      height: 20px;
-      opacity: 1;
-    }
+    margin: 0;
+    padding: 0;
+    height: 20px;
+    line-height: 20px;
   }
 }
 
@@ -409,7 +408,7 @@ const handleSubmit = async () => {
 
     .select-file-button {
       padding: 0.75rem 1.5rem;
-      background: #3498db;
+      background: var(--color-primary);
       color: white;
       border: none;
       border-radius: 6px;
@@ -419,7 +418,7 @@ const handleSubmit = async () => {
       transition: background 0.2s;
 
       &:hover {
-        background: #2980b9;
+        background: var(--color-primary-dark);
       }
     }
   }
@@ -440,7 +439,7 @@ const handleSubmit = async () => {
     .remove-image {
       width: 100%;
       padding: 0.75rem;
-      background: #e74c3c;
+      background: var(--color-error);
       color: white;
       border: none;
       font-size: 0.875rem;
@@ -449,7 +448,7 @@ const handleSubmit = async () => {
       transition: background 0.2s;
 
       &:hover {
-        background: #c0392b;
+        background: var(--color-error-dark);
       }
     }
   }
@@ -472,24 +471,24 @@ const handleSubmit = async () => {
   }
 
   .cancel-button {
-    background: #f1f2f6;
-    color: #2c3e50;
+    background: var(--color-border);
+    color: var(--color-text);
 
     &:hover {
-      background: #dcdde1;
+      background: var(--color-border-dark);
     }
   }
 
   .submit-button {
-    background: #3498db;
+    background: var(--color-primary);
     color: white;
 
     &:hover:not(:disabled) {
-      background: #2980b9;
+      background: var(--color-primary-dark);
     }
 
     &:disabled {
-      background: #95a5a6;
+      background: var(--color-disabled-bg);
       cursor: not-allowed;
       opacity: 0.7;
     }
@@ -500,10 +499,10 @@ const handleSubmit = async () => {
 .error {
   text-align: center;
   padding: 2rem;
-  color: #2c3e50;
+  color: var(--color-text);
 }
 
 .error {
-  color: #e74c3c;
+  color: var(--color-error);
 }
 </style> 

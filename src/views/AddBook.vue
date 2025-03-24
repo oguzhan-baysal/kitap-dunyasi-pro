@@ -146,22 +146,31 @@ const removeImage = () => {
 }
 
 const validateField = (field: string) => {
-  errors.value[field] = ''
+  if (!formData.value[field]) {
+    errors.value[field] = ''
+    return
+  }
   
   switch (field) {
     case 'title':
       if (formData.value.title.length < 3) {
         errors.value.title = 'Kitap adı en az 3 karakter olmalıdır'
+      } else {
+        errors.value.title = ''
       }
       break
     case 'author':
       if (formData.value.author.length < 3) {
         errors.value.author = 'Yazar adı en az 3 karakter olmalıdır'
+      } else {
+        errors.value.author = ''
       }
       break
     case 'price':
       if (formData.value.price < 0) {
         errors.value.price = 'Fiyat 0\'dan küçük olamaz'
+      } else {
+        errors.value.price = ''
       }
       break
   }
@@ -228,10 +237,12 @@ const handleSubmit = async () => {
     border: 1px solid var(--color-border);
     border-radius: 6px;
     font-size: 1rem;
-    transition: all 0.2s;
+    transition: border-color 0.2s, box-shadow 0.2s;
     width: 100%;
     box-sizing: border-box;
     height: 42px;
+    min-height: 42px;
+    max-height: 42px;
     background-color: var(--color-input-bg);
     color: var(--color-text);
 
@@ -251,18 +262,15 @@ const handleSubmit = async () => {
   }
 
   .error-message {
-    color: #e74c3c;
+    position: absolute;
+    bottom: -20px;
+    left: 0;
+    color: var(--color-error);
     font-size: 0.875rem;
-    margin-top: 0.25rem;
-    height: 0;
-    overflow: hidden;
-    transition: all 0.2s ease;
-    opacity: 0;
-    
-    &.visible {
-      height: 20px;
-      opacity: 1;
-    }
+    margin: 0;
+    padding: 0;
+    height: 20px;
+    line-height: 20px;
   }
 }
 
