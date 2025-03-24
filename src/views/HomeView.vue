@@ -144,10 +144,14 @@ onMounted(async () => {
 @use '@/assets/styles/_variables.scss' as *;
 
 .home {
-  padding: $spacing-6;
+  padding: $spacing-4;
   max-width: 1400px;
   margin: 0 auto;
   min-height: 100vh;
+
+  @media (max-width: $breakpoint-sm) {
+    padding: $spacing-2;
+  }
 }
 
 .books-section {
@@ -161,11 +165,21 @@ onMounted(async () => {
   border-radius: $border-radius-lg;
   width: 100%;
 
+  @media (max-width: $breakpoint-sm) {
+    margin-bottom: $spacing-4;
+    padding: $spacing-3;
+  }
+
   h1 {
     font-size: $font-size-2xl;
     color: var(--color-heading);
     margin-bottom: $spacing-6;
     text-align: center;
+
+    @media (max-width: $breakpoint-sm) {
+      font-size: $font-size-xl;
+      margin-bottom: $spacing-4;
+    }
   }
 }
 
@@ -180,17 +194,34 @@ onMounted(async () => {
     margin-bottom: $spacing-6;
     width: 100%;
 
+    @media (max-width: $breakpoint-sm) {
+      flex-direction: column;
+      gap: $spacing-4;
+      margin-bottom: $spacing-4;
+    }
+
     .header-left {
       display: flex;
       align-items: center;
       gap: $spacing-4;
       flex: 1;
 
+      @media (max-width: $breakpoint-sm) {
+        width: 100%;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: $spacing-2;
+      }
+
       h2 {
         font-size: $font-size-xl;
         color: var(--color-heading);
         margin: 0;
         white-space: nowrap;
+
+        @media (max-width: $breakpoint-sm) {
+          font-size: $font-size-lg;
+        }
       }
     }
 
@@ -198,60 +229,73 @@ onMounted(async () => {
       display: flex;
       gap: $spacing-2;
       align-items: center;
-      flex: 1;
+      flex-wrap: wrap;
+
+      @media (max-width: $breakpoint-sm) {
+        width: 100%;
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: $spacing-2;
+        padding: $spacing-2 0;
+      }
 
       .view-controls {
         display: flex;
         gap: $spacing-2;
         align-items: center;
         margin-left: auto;
+
+        @media (max-width: $breakpoint-sm) {
+          width: 100%;
+          grid-column: 1 / -1;
+          margin-left: 0;
+          display: grid;
+          grid-template-columns: repeat(2, 1fr);
+          margin-top: $spacing-2;
+        }
       }
 
       button {
         padding: $spacing-2 $spacing-4;
         border: 1px solid var(--color-border);
         border-radius: $border-radius;
-        background: #ffffff;
-        color: #000000;
+        background: var(--color-background);
+        color: var(--color-text);
         cursor: pointer;
-        transition: none;
+        transition: all 0.2s;
         font-size: $font-size-sm;
         height: 36px;
         min-width: fit-content;
+        white-space: nowrap;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        
+        @media (max-width: $breakpoint-sm) {
+          width: 100%;
+          height: 40px;
+          font-size: $font-size-sm;
+          padding: $spacing-2;
+          white-space: normal;
+          text-align: center;
+          line-height: 1.2;
+        }
         
         &:hover {
-          background: #ffffff !important;
-          border-color: var(--color-border);
+          border-color: var(--color-primary);
+          color: var(--color-primary);
+          background: var(--color-background-soft);
         }
         
         &.active {
-          background: var(--color-primary) !important;
-          color: #ffffff;
+          background: var(--color-primary);
+          color: white;
+          border-color: var(--color-primary);
         }
 
         .sort-indicator {
           margin-left: $spacing-1;
         }
-      }
-    }
-
-    .view-toggle {
-      padding: $spacing-2 $spacing-4;
-      background: #ffffff;
-      border: 1px solid var(--color-border);
-      border-radius: $border-radius;
-      color: #000000;
-      font-size: $font-size-sm;
-      cursor: pointer;
-      transition: none;
-      min-width: 140px;
-      height: 36px;
-      margin-left: auto;
-
-      &:hover {
-        background: #ffffff !important;
-        border-color: var(--color-border);
-        color: var(--color-primary);
       }
     }
   }
@@ -263,9 +307,18 @@ onMounted(async () => {
   width: 100%;
   display: grid;
 
+  @media (max-width: $breakpoint-sm) {
+    margin-bottom: $spacing-4;
+  }
+
   &.grid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
     gap: $spacing-4;
+    
+    @media (max-width: $breakpoint-sm) {
+      grid-template-columns: 1fr;
+      gap: $spacing-3;
+    }
     
     .book-card {
       width: 100%;
@@ -278,6 +331,10 @@ onMounted(async () => {
     display: flex;
     flex-direction: column;
     gap: $spacing-4;
+
+    @media (max-width: $breakpoint-sm) {
+      gap: $spacing-3;
+    }
   }
 }
 
@@ -285,6 +342,10 @@ onMounted(async () => {
   display: flex;
   justify-content: center;
   padding: $spacing-8;
+
+  @media (max-width: $breakpoint-sm) {
+    padding: $spacing-4;
+  }
 
   .loader {
     width: 40px;
@@ -300,6 +361,10 @@ onMounted(async () => {
   text-align: center;
   padding: $spacing-8;
   color: var(--color-text-light);
+
+  @media (max-width: $breakpoint-sm) {
+    padding: $spacing-4;
+  }
 }
 
 .no-books {
@@ -307,6 +372,11 @@ onMounted(async () => {
   padding: $spacing-8;
   color: var(--color-text-light);
   font-size: $font-size-lg;
+
+  @media (max-width: $breakpoint-sm) {
+    padding: $spacing-4;
+    font-size: $font-size-base;
+  }
 }
 
 @keyframes spin {
@@ -363,25 +433,34 @@ onMounted(async () => {
 .filter-toggle {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: $spacing-2;
   padding: $spacing-2 $spacing-4;
-  background: #ffffff;
+  background: var(--color-background);
   border: 1px solid var(--color-border);
   border-radius: $border-radius;
-  color: #000000;
+  color: var(--color-text);
   font-size: $font-size-sm;
   cursor: pointer;
-  transition: none;
+  transition: all 0.2s;
   height: 36px;
+  white-space: nowrap;
+
+  @media (max-width: $breakpoint-sm) {
+    width: 100%;
+    grid-column: 1 / -1;
+    margin-bottom: $spacing-2;
+    height: 40px;
+  }
 
   i {
     font-size: 0.9em;
   }
 
   &:hover {
-    background: #ffffff !important;
-    border-color: var(--color-border);
+    border-color: var(--color-primary);
     color: var(--color-primary);
+    background: var(--color-background-soft);
   }
 
   &:active {
@@ -448,27 +527,6 @@ input {
   &:focus {
     outline: none;
     border-color: var(--color-primary);
-  }
-}
-
-[data-theme="dark"] {
-  .filter-buttons button,
-  .filter-toggle,
-  .view-toggle {
-    background: #ffffff !important;
-    color: #000000;
-    border: 1px solid #e5e7eb;
-    
-    &:hover {
-      background: #ffffff !important;
-      border-color: #e5e7eb;
-    }
-    
-    &.active {
-      background: var(--color-primary) !important;
-      color: #ffffff;
-      border-color: var(--color-primary);
-    }
   }
 }
 

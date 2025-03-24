@@ -298,12 +298,22 @@ const handleSubmit = async () => {
   margin: 2rem auto;
   padding: 0 1rem;
 
+  @media (max-width: $breakpoint-sm) {
+    margin: 1rem auto;
+    padding: 0 0.5rem;
+  }
+
   h1 {
     margin-bottom: 1.5rem;
     text-align: center;
     color: var(--color-text-primary);
     font-size: 1.75rem;
     font-weight: 600;
+
+    @media (max-width: $breakpoint-sm) {
+      font-size: 1.5rem;
+      margin-bottom: 1rem;
+    }
   }
 }
 
@@ -315,6 +325,11 @@ const handleSubmit = async () => {
   padding: 1.5rem;
   border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+
+  @media (max-width: $breakpoint-sm) {
+    padding: 1rem;
+    gap: 1rem;
+  }
 }
 
 .form-group {
@@ -322,6 +337,12 @@ const handleSubmit = async () => {
   flex-direction: column;
   gap: 0.375rem;
   position: relative;
+  margin-bottom: 1.5rem;
+
+  @media (max-width: $breakpoint-sm) {
+    gap: 0.25rem;
+    margin-bottom: 1.25rem;
+  }
 
   label {
     font-weight: 500;
@@ -330,6 +351,10 @@ const handleSubmit = async () => {
     display: flex;
     align-items: center;
     gap: 0.25rem;
+
+    @media (max-width: $breakpoint-sm) {
+      font-size: 0.875rem;
+    }
 
     &::after {
       content: "*";
@@ -357,6 +382,14 @@ const handleSubmit = async () => {
     background-color: var(--color-input-bg);
     color: var(--color-text);
 
+    @media (max-width: $breakpoint-sm) {
+      padding: 0.5rem 0.75rem;
+      font-size: 0.875rem;
+      height: 38px;
+      min-height: 38px;
+      max-height: 38px;
+    }
+
     &:focus {
       outline: none;
       border-color: var(--color-primary);
@@ -382,6 +415,13 @@ const handleSubmit = async () => {
     padding: 0;
     height: 20px;
     line-height: 20px;
+
+    @media (max-width: $breakpoint-sm) {
+      font-size: 0.75rem;
+      bottom: -18px;
+      height: 18px;
+      line-height: 18px;
+    }
   }
 }
 
@@ -391,9 +431,17 @@ const handleSubmit = async () => {
   flex-direction: column;
   gap: 1rem;
 
+  @media (max-width: $breakpoint-sm) {
+    gap: 0.75rem;
+  }
+
   .file-input-container {
     position: relative;
     width: fit-content;
+
+    @media (max-width: $breakpoint-sm) {
+      width: 100%;
+    }
 
     .file-input {
       position: absolute;
@@ -417,6 +465,12 @@ const handleSubmit = async () => {
       cursor: pointer;
       transition: background 0.2s;
 
+      @media (max-width: $breakpoint-sm) {
+        width: 100%;
+        padding: 0.625rem 1rem;
+        font-size: 0.875rem;
+      }
+
       &:hover {
         background: var(--color-primary-dark);
       }
@@ -429,6 +483,10 @@ const handleSubmit = async () => {
     border-radius: 8px;
     overflow: hidden;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+
+    @media (max-width: $breakpoint-sm) {
+      max-width: 100%;
+    }
 
     img {
       width: 100%;
@@ -447,6 +505,11 @@ const handleSubmit = async () => {
       cursor: pointer;
       transition: background 0.2s;
 
+      @media (max-width: $breakpoint-sm) {
+        padding: 0.625rem;
+        font-size: 0.8125rem;
+      }
+
       &:hover {
         background: var(--color-error-dark);
       }
@@ -459,6 +522,12 @@ const handleSubmit = async () => {
   gap: 1rem;
   margin-top: 2rem;
 
+  @media (max-width: $breakpoint-sm) {
+    flex-direction: column-reverse;
+    margin-top: 1.5rem;
+    gap: 0.75rem;
+  }
+
   button {
     flex: 1;
     padding: 1rem;
@@ -468,6 +537,11 @@ const handleSubmit = async () => {
     font-weight: 500;
     cursor: pointer;
     transition: all 0.2s ease;
+
+    @media (max-width: $breakpoint-sm) {
+      padding: 0.875rem;
+      font-size: 0.9375rem;
+    }
   }
 
   .cancel-button {
@@ -500,6 +574,11 @@ const handleSubmit = async () => {
   text-align: center;
   padding: 2rem;
   color: var(--color-text);
+
+  @media (max-width: $breakpoint-sm) {
+    padding: 1.5rem;
+    font-size: 0.875rem;
+  }
 }
 
 .error {

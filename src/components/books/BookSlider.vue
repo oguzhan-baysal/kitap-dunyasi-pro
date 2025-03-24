@@ -102,6 +102,10 @@ onBeforeUnmount(() => {
   width: 100%;
   margin: 2rem 0;
   position: relative;
+
+  @media (max-width: $breakpoint-sm) {
+    margin: 1rem 0;
+  }
 }
 
 .slider-container {
@@ -110,8 +114,12 @@ onBeforeUnmount(() => {
   height: 400px;
   overflow: hidden;
   border-radius: $border-radius-lg;
-  background: var(--bg-primary);
-  box-shadow: $shadow-lg;
+  background: var(--color-background-soft);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+
+  @media (max-width: $breakpoint-sm) {
+    height: 550px;
+  }
 }
 
 .slides {
@@ -128,6 +136,7 @@ onBeforeUnmount(() => {
   height: 100%;
   opacity: 0;
   transition: opacity 0.5s ease-in-out;
+  overflow: hidden;
 
   &.active {
     opacity: 1;
@@ -140,28 +149,73 @@ onBeforeUnmount(() => {
   height: 100%;
   padding: $spacing-6;
   gap: $spacing-8;
+  background: linear-gradient(90deg, var(--color-background-soft) 0%, transparent 100%);
+
+  @media (max-width: $breakpoint-sm) {
+    flex-direction: column;
+    padding: $spacing-4;
+    gap: $spacing-4;
+    justify-content: flex-start;
+    text-align: center;
+    background: linear-gradient(0deg, var(--color-background-soft) 0%, transparent 100%);
+    height: 100%;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+
+    &::-webkit-scrollbar {
+      display: none;
+    }
+  }
 
   img {
     width: 250px;
     height: 350px;
     object-fit: cover;
     border-radius: $border-radius;
-    box-shadow: $shadow-md;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+
+    @media (max-width: $breakpoint-sm) {
+      width: 160px;
+      height: 240px;
+      margin-top: $spacing-4;
+      margin-bottom: $spacing-4;
+      flex-shrink: 0;
+    }
   }
 
   .book-info {
     flex: 1;
+    max-width: 600px;
+    
+    @media (max-width: $breakpoint-sm) {
+      max-width: 100%;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
     
     h2 {
       font-size: $font-size-3xl;
       color: var(--color-heading);
       margin-bottom: $spacing-4;
+
+      @media (max-width: $breakpoint-sm) {
+        font-size: $font-size-xl;
+        margin-bottom: $spacing-3;
+        padding: 0 $spacing-2;
+      }
     }
 
     .author {
       font-size: $font-size-lg;
       color: var(--color-text-light);
       margin-bottom: $spacing-3;
+
+      @media (max-width: $breakpoint-sm) {
+        font-size: $font-size-base;
+        margin-bottom: $spacing-3;
+      }
     }
 
     .description {
@@ -172,6 +226,15 @@ onBeforeUnmount(() => {
       -webkit-line-clamp: 3;
       -webkit-box-orient: vertical;
       overflow: hidden;
+
+      @media (max-width: $breakpoint-sm) {
+        font-size: $font-size-base;
+        margin-bottom: $spacing-4;
+        -webkit-line-clamp: 3;
+        line-height: 1.5;
+        padding: 0 $spacing-3;
+        max-width: 100%;
+      }
     }
 
     .details-button {
@@ -181,11 +244,20 @@ onBeforeUnmount(() => {
       color: white;
       border-radius: $border-radius;
       text-decoration: none;
-      font-weight: $font-weight-medium;
-      transition: background-color 0.2s;
+      font-weight: 500;
+      transition: all 0.2s;
+
+      @media (max-width: $breakpoint-sm) {
+        padding: $spacing-3 $spacing-8;
+        font-size: $font-size-base;
+        width: auto;
+        min-width: 200px;
+        margin-bottom: $spacing-4;
+      }
 
       &:hover {
         background-color: var(--color-primary-dark);
+        transform: translateY(-1px);
       }
     }
   }
@@ -203,7 +275,17 @@ onBeforeUnmount(() => {
   border-radius: 50%;
   cursor: pointer;
   z-index: 2;
-  transition: background-color 0.2s;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+
+  @media (max-width: $breakpoint-sm) {
+    width: 32px;
+    height: 32px;
+    font-size: 1.25rem;
+  }
 
   &:hover {
     background: rgba(0, 0, 0, 0.7);
@@ -211,10 +293,18 @@ onBeforeUnmount(() => {
 
   &.prev {
     left: $spacing-4;
+
+    @media (max-width: $breakpoint-sm) {
+      left: $spacing-2;
+    }
   }
 
   &.next {
     right: $spacing-4;
+
+    @media (max-width: $breakpoint-sm) {
+      right: $spacing-2;
+    }
   }
 }
 
@@ -224,6 +314,11 @@ onBeforeUnmount(() => {
   gap: $spacing-2;
   margin-top: $spacing-4;
 
+  @media (max-width: $breakpoint-sm) {
+    margin-top: $spacing-2;
+    gap: $spacing-1;
+  }
+
   .dot {
     width: 10px;
     height: 10px;
@@ -231,43 +326,20 @@ onBeforeUnmount(() => {
     background: var(--color-border);
     border: none;
     cursor: pointer;
-    transition: background-color 0.2s;
+    transition: all 0.2s;
+
+    @media (max-width: $breakpoint-sm) {
+      width: 8px;
+      height: 8px;
+    }
 
     &.active {
       background: var(--color-primary);
+      transform: scale(1.2);
     }
 
     &:hover {
       background: var(--color-primary-light);
-    }
-  }
-}
-
-@media (max-width: 768px) {
-  .slider-container {
-    height: auto;
-  }
-
-  .slide-content {
-    flex-direction: column;
-    padding: $spacing-4;
-    gap: $spacing-4;
-
-    img {
-      width: 200px;
-      height: 280px;
-    }
-
-    .book-info {
-      text-align: center;
-
-      h2 {
-        font-size: $font-size-2xl;
-      }
-
-      .description {
-        -webkit-line-clamp: 2;
-      }
     }
   }
 }

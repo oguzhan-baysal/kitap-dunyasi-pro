@@ -48,6 +48,25 @@ onMounted(async () => {
 .main-content {
   flex: 1;
   padding: $spacing-4;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+
+  @media (max-width: $breakpoint-xl) {
+    max-width: 1024px;
+  }
+
+  @media (max-width: $breakpoint-lg) {
+    max-width: 768px;
+  }
+
+  @media (max-width: $breakpoint-md) {
+    padding: $spacing-3;
+  }
+
+  @media (max-width: $breakpoint-sm) {
+    padding: $spacing-2;
+  }
 }
 
 :root {
@@ -81,6 +100,18 @@ onMounted(async () => {
   --color-input-bg: #ffffff;
   --color-button-text: #000000;
   --color-button-bg: #ffffff;
+
+  // Responsive tipografi
+  --font-size-base: 16px;
+  --line-height-base: 1.6;
+
+  @media (max-width: $breakpoint-lg) {
+    --font-size-base: 15px;
+  }
+
+  @media (max-width: $breakpoint-md) {
+    --font-size-base: 14px;
+  }
 }
 
 [data-theme="dark"] {
@@ -134,10 +165,10 @@ body {
   min-height: 100vh;
   color: var(--color-text);
   background: var(--color-background);
-  line-height: 1.6;
+  line-height: var(--line-height-base);
   font-family: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu,
     Cantarell, 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
-  font-size: 16px;
+  font-size: var(--font-size-base);
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -147,6 +178,14 @@ button {
   background-color: var(--color-button-bg);
   color: var(--color-button-text);
   border: 1px solid var(--color-border);
+  padding: 0.75rem 1.5rem;
+  border-radius: 6px;
+  font-size: var(--font-size-base);
+  cursor: pointer;
+  
+  @media (max-width: $breakpoint-md) {
+    padding: 0.625rem 1.25rem;
+  }
   
   &:hover {
     border-color: var(--color-border-hover);
@@ -157,19 +196,97 @@ input, select, textarea {
   background-color: var(--color-input-bg);
   color: var(--color-text);
   border: 1px solid var(--color-border);
+  padding: 0.75rem;
+  border-radius: 6px;
+  font-size: var(--font-size-base);
+  width: 100%;
+  
+  @media (max-width: $breakpoint-md) {
+    padding: 0.625rem;
+  }
   
   &:focus {
     border-color: var(--color-primary);
+    outline: none;
   }
 }
 
 .card {
   background-color: var(--color-card-bg);
   border: 1px solid var(--color-border);
+  border-radius: 8px;
+  padding: 1.5rem;
+  
+  @media (max-width: $breakpoint-md) {
+    padding: 1rem;
+  }
+  
+  @media (max-width: $breakpoint-sm) {
+    padding: 0.75rem;
+  }
 }
 
 [role="link"] {
   cursor: pointer;
   display: inline-block;
+}
+
+// Responsive grid sistem
+.grid {
+  display: grid;
+  gap: 1.5rem;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  
+  @media (max-width: $breakpoint-md) {
+    gap: 1rem;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  }
+  
+  @media (max-width: $breakpoint-sm) {
+    gap: 0.75rem;
+    grid-template-columns: 1fr;
+  }
+}
+
+// Responsive flex container
+.flex-container {
+  display: flex;
+  gap: 1.5rem;
+  
+  @media (max-width: $breakpoint-md) {
+    gap: 1rem;
+  }
+  
+  @media (max-width: $breakpoint-sm) {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+}
+
+// Yardımcı sınıflar
+.hide-on-mobile {
+  @media (max-width: $breakpoint-sm) {
+    display: none !important;
+  }
+}
+
+.show-on-mobile {
+  display: none !important;
+  
+  @media (max-width: $breakpoint-sm) {
+    display: block !important;
+  }
+}
+
+.text-center-mobile {
+  @media (max-width: $breakpoint-sm) {
+    text-align: center !important;
+  }
+}
+
+.full-width-mobile {
+  @media (max-width: $breakpoint-sm) {
+    width: 100% !important;
+  }
 }
 </style>
