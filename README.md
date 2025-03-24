@@ -84,3 +84,25 @@ Bu proje MIT lisansı altında lisanslanmıştır. Detaylar için [LICENSE](LICE
 ## 👨‍💻 Geliştirici
 
 Oğuzhan Baysal
+
+## 🚧 Zorluklar ve Çözümler
+
+### 1. State Yönetimi
+**Zorluk:** Çoklu para birimi ve favori kitapların senkronizasyonu karmaşıktı.
+**Çözüm:** Vuex modüllerini daha küçük parçalara böldük ve vuex-persistedstate ile localStorage senkronizasyonunu sağladık.
+
+### 2. Performans Optimizasyonu
+**Zorluk:** Büyük kitap listelerinde performans sorunları yaşandı.
+**Çözüm:** Virtual scrolling ve lazy loading teknikleri uygulandı. Ayrıca computed property'ler ile gereksiz render'lar engellendi.
+
+### 3. Form Validasyonu
+**Zorluk:** Karmaşık form validasyonları ve async kontroller yönetimi zordu.
+**Çözüm:** Vee-validate ve Yup kombinasyonu ile schema-based validasyon sistemi kuruldu.
+
+### 4. Tema Değişimi
+**Zorluk:** Dinamik tema değişiminde stil geçişleri sorunluydu.
+**Çözüm:** CSS değişkenleri ve SCSS mixin'leri kullanılarak merkezi tema sistemi oluşturuldu.
+
+### 5. API Önbellekleme
+**Zorluk:** Sürekli API çağrıları performansı düşürüyordu.
+**Çözüm:** Axios interceptor'lar ve localStorage ile akıllı önbellekleme sistemi implementi edildi.
