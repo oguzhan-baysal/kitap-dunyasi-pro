@@ -114,7 +114,7 @@ onMounted(async () => {
 
   label {
     font-size: 0.9rem;
-    color: #000000 !important;
+    color: var(--color-text);
   }
 
   select {
@@ -146,8 +146,8 @@ onMounted(async () => {
 
 [data-theme="dark"] {
   .book-detail {
-    background: #ffffff;
-    color: #000000;
+    background: #1a1a1a;
+    color: #ffffff;
     padding: 2rem;
     border-radius: 8px;
     
@@ -161,48 +161,56 @@ onMounted(async () => {
     .review-text,
     .share-section,
     .rating-section,
+    .rating-label,
     label,
     p {
-      color: #000000 !important;
+      color: #e2e8f0 !important;
     }
 
     .review-form {
-      background: #ffffff;
+      background: #1a1a1a;
       
       textarea,
       input {
-        background: #ffffff;
-        color: #000000;
-        border: 1px solid #e5e7eb;
+        background: #1a1a1a;
+        color: #ffffff;
+        border: 1px solid #333333;
       }
     }
 
     .reviews-list {
       .review {
-        background: #ffffff;
-        border: 1px solid #e5e7eb;
+        background: #1a1a1a;
+        border: 1px solid #333333;
       }
     }
 
     .rating-section {
-      background: #ffffff;
+      background: #1a1a1a;
       padding: 1rem;
       border-radius: 8px;
-      border: 1px solid #e5e7eb;
+      border: 1px solid #333333;
 
       label, select {
-        color: #000000;
+        color: #ffffff;
+      }
+    }
+
+    .rating {
+      label {
+        color: #ffffff !important;
       }
     }
   }
 
   .rating {
-    label, select {
-      color: #000000;
+    label {
+      color: #ffffff !important;
     }
     select {
       background: #ffffff;
-      border-color: #e5e7eb;
+      border-color: #333333;
+      color: #000000;
     }
   }
 }
@@ -299,17 +307,51 @@ onMounted(async () => {
         }
 
         .add-to-cart {
+          display: inline-flex;
+          align-items: center;
+          gap: $spacing-2;
           padding: $spacing-3 $spacing-6;
-          background: var(--color-primary);
-          color: white;
-          border: none;
-          border-radius: $border-radius;
+          background: var(--color-primary) !important;
+          color: white !important;
           font-weight: $font-weight-medium;
           cursor: pointer;
-          transition: background-color 0.2s;
+          transition: transform 0.3s ease, box-shadow 0.3s ease;
+          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+          position: relative;
+          overflow: hidden;
+          outline: none;
+          border: none;
+          border-radius: $border-radius;
 
-          &:hover {
-            background: var(--color-primary-dark);
+          &::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+              120deg,
+              transparent,
+              rgba(255, 255, 255, 0.3),
+              transparent
+            );
+            transition: 0.5s ease;
+            pointer-events: none;
+          }
+
+          &:hover, &:focus, &:active {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            background: var(--color-primary) !important;
+
+            &::before {
+              left: 100%;
+            }
+          }
+
+          &:focus {
+            box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.3);
           }
         }
       }
